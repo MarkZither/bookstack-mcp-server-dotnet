@@ -26,18 +26,23 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Task 1 — `global.json` SDK pin
 
-Create `global.json` at the repository root pinning the .NET 10 SDK.
+Create `global.json` at the repository root pinning the .NET 10 SDK and opting in to the Microsoft.Testing.Platform runner.
 
 ```json
 {
   "sdk": {
     "version": "10.0.100",
     "rollForward": "latestPatch"
+  },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
   }
 }
 ```
 
-**Acceptance**: `dotnet --version` at the repository root outputs `10.0.1xx`.
+The `"test": { "runner": "Microsoft.Testing.Platform" }` entry is required for `dotnet test` to use the MTP runner (TUnit) instead of the removed VSTest integration on .NET 10 SDK.
+
+**Acceptance**: `dotnet --version` at the repository root outputs `10.0.1xx`; `dotnet test` runs without VSTest errors.
 
 ---
 
@@ -168,7 +173,7 @@ Required rules (non-exhaustive — all must be present):
 </PropertyGroup>
 
 <ItemGroup>
-  <PackageReference Include="TUnit" Version="0.*" />
+  <PackageReference Include="TUnit" Version="1.*" />
   <PackageReference Include="Moq" Version="4.*" />
   <PackageReference Include="FluentAssertions" Version="7.*" />
   <ProjectReference Include="..\..\src\BookStack.Mcp.Server\BookStack.Mcp.Server.csproj" />
@@ -286,7 +291,7 @@ These are project-wide conventions, not implementation tasks. All future tests m
 
 | Convention | Rule |
 | --- | --- |
-| Framework | TUnit 0.x (see [ADR-0004](../../architecture/decisions/ADR-0004-test-framework.md)) |
+| Framework | TUnit 1.x (see [ADR-0004](../../architecture/decisions/ADR-0004-test-framework.md)) |
 | Assertion library | TUnit built-ins (`Assert.That`) or FluentAssertions 7.x — both are acceptable |
 | Mocking library | Moq 4.x |
 | Test method naming | `MethodName_Scenario_ExpectedResult` |

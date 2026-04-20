@@ -27,7 +27,7 @@ Test project packages:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="TUnit" Version="0.*" />
+  <PackageReference Include="TUnit" Version="1.*" />
   <PackageReference Include="Moq" Version="4.*" />
   <PackageReference Include="FluentAssertions" Version="7.*" />
 </ItemGroup>
@@ -92,9 +92,8 @@ public async Task MethodName_Scenario_ExpectedResult()
 
 ### Negative / Trade-offs
 
-- TUnit is at `0.x` — minor breaking changes are possible between patch versions. The `Version="0.*"` wildcard in the `csproj` mitigates this by always picking the latest compatible patch.
-- Community resources (Stack Overflow answers, blog posts) are less abundant than for xUnit. Official TUnit documentation is the primary reference.
-- Some Moq documentation examples show xUnit `[Fact]`/`[Theory]` attributes; contributors must adapt examples to TUnit's `[Test]`/`[Arguments]` equivalents.
+- TUnit is at `1.x` (reached stable 1.0 shortly after the project started). The `Version="1.*"` wildcard in the `csproj` picks the latest compatible minor version.
+- `dotnet test` on .NET 10 SDK requires opting in to the Microsoft.Testing.Platform runner via `global.json`: `"test": { "runner": "Microsoft.Testing.Platform" }`. Without this, `dotnet test` falls back to the removed VSTest integration and errors. This is a one-time repo-level setting documented in `global.json` and ADR-0003.
 
 ## Related ADRs
 

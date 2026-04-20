@@ -20,7 +20,7 @@ The spec's security requirements explicitly mandate that all third-party Actions
 
 We will use **GitHub Actions on `ubuntu-latest`** with the following pinning strategy:
 
-- **SDK version**: A `global.json` file at the repository root pins the .NET SDK to a specific `10.0.x` patch version with `"rollForward": "latestPatch"` to allow patch-level security updates without manual intervention.
+- **SDK version**: A `global.json` file at the repository root pins the .NET SDK to a specific `10.0.x` patch version with `"rollForward": "latestPatch"` to allow patch-level security updates without manual intervention. It also opts in to the Microsoft.Testing.Platform runner (`"test": { "runner": "Microsoft.Testing.Platform" }`) required for TUnit on .NET 10 SDK.
 - **Action versions**: All `uses:` references in workflow files are pinned to an immutable **commit SHA** (not a mutable tag like `v4`). A comment on the same line records the human-readable tag for maintainability.
 
 The CI workflow (`.github/workflows/ci.yml`) runs a single job with four sequential steps that each fail fast:

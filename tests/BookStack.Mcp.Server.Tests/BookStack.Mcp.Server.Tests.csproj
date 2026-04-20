@@ -6,10 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <RootNamespace>BookStack.Mcp.Server.Tests</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TUnit" Version="0.*" />
+    <PackageReference Include="TUnit" Version="1.*" />
     <PackageReference Include="Moq" Version="4.*" />
     <PackageReference Include="FluentAssertions" Version="7.*" />
   </ItemGroup>
