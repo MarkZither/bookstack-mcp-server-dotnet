@@ -13,12 +13,12 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Phase 1 — Setup
 
-- [ ] [Task 1] Create `global.json` SDK pin (.NET 10) → [#21](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/21)
+- [X] [Task 1] Create `global.json` SDK pin (.NET 10) → [#21](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/21)
 
 ### Phase 2 — Foundational
 
-- [ ] [Task 2] Create `.editorconfig` encoding project formatting rules → [#19](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/19)
-- [ ] [P] [Task 3] Create solution file and all project files → [#20](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/20)
+- [X] [Task 2] Create `.editorconfig` encoding project formatting rules → [#19](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/19)
+- [X] [P] [Task 3] Create solution file and all project files → [#20](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/20)
 
 ### Phase 3 — Core Scaffold
 
