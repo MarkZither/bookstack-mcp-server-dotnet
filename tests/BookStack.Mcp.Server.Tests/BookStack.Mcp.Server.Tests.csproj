@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>BookStack.Mcp.Server.Tests</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TUnit" Version="1.*" />
+    <PackageReference Include="Moq" Version="4.*" />
+    <PackageReference Include="FluentAssertions" Version="7.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BookStack.Mcp.Server\BookStack.Mcp.Server.csproj" />
+  </ItemGroup>
+
+</Project>
