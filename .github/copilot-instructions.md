@@ -11,28 +11,32 @@ The server exposes 47+ MCP tools and resources covering books, chapters, pages, 
 - **Runtime**: .NET 10, C#
 - **Protocol**: Model Context Protocol (MCP) — `stdio` and Streamable HTTP transports
 - **API Client**: `HttpClient` with typed clients, `System.Text.Json`
-- **Testing**: xUnit, Moq, FluentAssertions
+- **Testing**: TUnit, Moq, FluentAssertions
 - **Linting / formatting**: `dotnet format`, EditorConfig
 
 ## Project Structure
 
 ```
 src/
-  BookStack.Mcp.Server/       # Main server project
-    Server.cs                 # MCP server entry point
+  BookStack.Mcp.Server/                        # Main server project
+    Server.cs                                  # MCP server entry point
     Program.cs
-    api/                      # BookStack API client
-    config/                   # Configuration manager
-    resources/                # MCP resource handlers
-    tools/                    # MCP tool handlers
-    utils/                    # Shared utilities (errors, logger, rate-limit)
-    validation/               # Input validators
+    api/                                       # BookStack API client
+    config/                                    # Configuration manager
+    resources/                                 # MCP resource handlers
+    tools/                                     # MCP tool handlers
+    utils/                                     # Shared utilities (errors, logger, rate-limit)
+    validation/                                # Input validators
+  BookStack.Mcp.Server.Data.Abstractions/      # EF Core interfaces & entity models
+  BookStack.Mcp.Server.Data.SqlServer/         # SQL Server EF Core provider
+  BookStack.Mcp.Server.Data.Postgres/          # PostgreSQL EF Core provider (pgvector)
+  BookStack.Mcp.Server.Data.Sqlite/            # SQLite EF Core provider (dev/lightweight)
 tests/
-  BookStack.Mcp.Server.Tests/ # xUnit test project
+  BookStack.Mcp.Server.Tests/                  # TUnit test project
 docs/
-  architecture/decisions/     # ADRs
-  features/                   # Feature specs
-  migrations/                 # Migration specs
+  architecture/decisions/                      # ADRs
+  features/                                    # Feature specs
+  migrations/                                  # Migration specs
   envisioning/                # Envisioning docs
 ```
 

@@ -7,7 +7,7 @@
 **Last Updated**: 2026-04-20
 **GitHub Issue**: [#14 — .NET 10 Solution Scaffold & CI/CD](https://github.com/pnocera/bookstack-mcp-server-dotnet/issues/14)
 **Parent Epic**: [#1 — Core MCP Server](https://github.com/pnocera/bookstack-mcp-server-dotnet/issues/1)
-**Related ADRs**: None
+**Related ADRs**: [ADR-0002](../../architecture/decisions/ADR-0002-solution-structure.md), [ADR-0003](../../architecture/decisions/ADR-0003-cicd-github-actions.md), [ADR-0004](../../architecture/decisions/ADR-0004-test-framework.md)
 
 ---
 
@@ -16,7 +16,7 @@
 - **Objective**: Establish the foundational .NET 10 solution structure and automated CI/CD pipeline that all subsequent features depend on.
 - **Primary user**: Contributors and maintainers of `bookstack-mcp-server-dotnet`.
 - **Value delivered**: A clean, buildable, testable repository skeleton with enforced code formatting, enabling all subsequent features to be developed and verified in isolation.
-- **Scope**: Solution file, server console project, xUnit test project, GitHub Actions CI workflow, `.editorconfig`, and README quickstart. No functional MCP tools or BookStack API integration.
+- **Scope**: Solution file, server console project, EF Core data layer projects (Abstractions, SqlServer, Postgres, Sqlite), TUnit test project, GitHub Actions CI workflow, `.editorconfig`, and README quickstart. No functional MCP tools or BookStack API integration.
 - **Primary success criterion**: `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes` all pass on a clean clone against the `main` branch.
 
 ---
@@ -28,7 +28,7 @@ The repository currently contains no .NET solution or project files. Before any 
 ## Goals
 
 1. Provide a compilable .NET 10 solution with the correct project layout as defined in the project structure conventions.
-2. Establish an xUnit test project wired to the CI pipeline so that all future unit tests run automatically on every push and pull request.
+2. Establish a TUnit test project wired to the CI pipeline so that all future unit tests run automatically on every push and pull request.
 3. Enforce consistent code formatting via `.editorconfig` and `dotnet format` in CI, making formatting violations a build blocker before code is merged.
 4. Give new contributors a frictionless onboarding path via a README quickstart with a live CI build badge.
 
@@ -45,13 +45,18 @@ The repository currently contains no .NET solution or project files. Before any 
 ### Functional Requirements
 
 1. The solution MUST include a `BookStack.Mcp.Server` console project targeting `net10.0`, located at `src/BookStack.Mcp.Server/`.
-2. The solution MUST include a `BookStack.Mcp.Server.Tests` xUnit test project targeting `net10.0`, located at `tests/BookStack.Mcp.Server.Tests/`.
-3. A `BookStack.Mcp.Server.sln` solution file at the repository root MUST reference both projects.
-4. The GitHub Actions CI workflow MUST trigger on every push to `main` and on every pull request targeting `main`.
-5. The CI workflow MUST execute `dotnet restore`, `dotnet build --no-restore`, `dotnet test --no-build`, and `dotnet format --verify-no-changes` in sequence, failing the pipeline on any error.
-6. The `.editorconfig` at the repository root MUST encode the project's formatting rules as defined in `.github/docs/coding-guidelines.md`.
-7. The README MUST display a CI build status badge linked to the GitHub Actions workflow run.
-8. The README MUST include a quickstart section covering the steps to clone, build, and test the solution locally.
+2. The solution MUST include a `BookStack.Mcp.Server.Tests` TUnit test project targeting `net10.0`, located at `tests/BookStack.Mcp.Server.Tests/`.
+3. A `BookStack.Mcp.Server.sln` solution file at the repository root MUST reference all projects (server, four data layer projects, and tests).
+4. The solution MUST include the following data layer projects, all targeting `net10.0`:
+   - `src/BookStack.Mcp.Server.Data.Abstractions/` — shared interfaces and EF Core entity models
+   - `src/BookStack.Mcp.Server.Data.SqlServer/` — SQL Server EF Core provider
+   - `src/BookStack.Mcp.Server.Data.Postgres/` — PostgreSQL EF Core provider
+   - `src/BookStack.Mcp.Server.Data.Sqlite/` — SQLite EF Core provider
+5. The GitHub Actions CI workflow MUST trigger on every push to `main` and on every pull request targeting `main`.
+   6. The CI workflow MUST execute `dotnet restore`, `dotnet build --no-restore`, `dotnet test --no-build`, and `dotnet format --verify-no-changes` in sequence, failing the pipeline on any error.
+7. The `.editorconfig` at the repository root MUST encode the project's formatting rules as defined in `.github/docs/coding-guidelines.md`.
+   8. The README MUST display a CI build status badge linked to the GitHub Actions workflow run.
+   9. The README MUST include a quickstart section covering the steps to clone, build, and test the solution locally.
 
 ### Non-Functional Requirements
 
@@ -69,15 +74,23 @@ BookStack.Mcp.Server.sln
 README.md
 src/
   BookStack.Mcp.Server/
-    BookStack.Mcp.Server.csproj   # Console app — net10.0
-    Program.cs                    # Minimal entry-point stub
+    BookStack.Mcp.Server.csproj         # Console app — net10.0
+    Program.cs                          # Minimal entry-point stub
+  BookStack.Mcp.Server.Data.Abstractions/
+    BookStack.Mcp.Server.Data.Abstractions.csproj
+  BookStack.Mcp.Server.Data.SqlServer/
+    BookStack.Mcp.Server.Data.SqlServer.csproj
+  BookStack.Mcp.Server.Data.Postgres/
+    BookStack.Mcp.Server.Data.Postgres.csproj
+  BookStack.Mcp.Server.Data.Sqlite/
+    BookStack.Mcp.Server.Data.Sqlite.csproj
 tests/
   BookStack.Mcp.Server.Tests/
-    BookStack.Mcp.Server.Tests.csproj  # xUnit test project — net10.0
-    PlaceholderTest.cs                 # Single passing smoke test
+    BookStack.Mcp.Server.Tests.csproj   # TUnit test project — net10.0
+    PlaceholderTest.cs                  # Single passing smoke test
 .github/
   workflows/
-    ci.yml                        # Build · Test · Format
+    ci.yml                              # Build · Test · Format
 ```
 
 ### CI Pipeline
