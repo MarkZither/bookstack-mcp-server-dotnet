@@ -3,7 +3,7 @@
 **Feature**: FEAT-0007
 **Parent Issue**: [#7](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/7)
 **Decomposed**: 2026-04-20
-**Status**: Tasks created on GitHub Issues
+**Status**: All tasks completed — merged via PR #51
 
 ---
 
@@ -13,27 +13,27 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Phase 1 — Tool Handler Implementations
 
-- [ ] [Task 1] Implement `BookToolHandler` — 6 CRUD tools (`list`, `read`, `create`, `update`, `delete`, `export`) → [#45](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/45)
+- [X] [Task 1] Implement `BookToolHandler` — 6 CRUD tools (`list`, `read`, `create`, `update`, `delete`, `export`) → [#45](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/45)
   - Establishes `_jsonOptions`, error-handling, and validation patterns for Tasks 2–5
-- [ ] [P] [Task 2] Implement `ChapterToolHandler` — 6 CRUD tools (`list`, `read`, `create`, `update`, `delete`, `export`) → [#43](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/43)
+- [X] [P] [Task 2] Implement `ChapterToolHandler` — 6 CRUD tools (`list`, `read`, `create`, `update`, `delete`, `export`) → [#43](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/43)
   - Depends on: #45 (follow patterns established in Task 1)
-- [ ] [P] [Task 3] Implement `PageToolHandler` — 6 CRUD tools (`list`, `read`, `create`, `update`, `delete`, `export`) → [#44](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/44)
+- [X] [P] [Task 3] Implement `PageToolHandler` — 6 CRUD tools (`list`, `read`, `create`, `update`, `delete`, `export`) → [#44](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/44)
   - Depends on: #45 (follow patterns established in Task 1)
-- [ ] [P] [Task 4] Implement `ShelfToolHandler` — 5 CRUD tools (`list`, `read`, `create`, `update`, `delete`) → [#46](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/46)
+- [X] [P] [Task 4] Implement `ShelfToolHandler` — 5 CRUD tools (`list`, `read`, `create`, `update`, `delete`) → [#46](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/46)
   - Depends on: #45 (follow patterns established in Task 1)
 
 ### Phase 2 — Resource Handler Implementations
 
-- [ ] [Task 5] Implement resource handlers — `BookResourceHandler`, `ChapterResourceHandler`, `PageResourceHandler`, `ShelfResourceHandler` (collection + `{id}` methods) → [#49](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/49)
+- [X] [Task 5] Implement resource handlers — `BookResourceHandler`, `ChapterResourceHandler`, `PageResourceHandler`, `ShelfResourceHandler` (collection + `{id}` methods) → [#49](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/49)
   - Depends on: #45, #43, #44, #46
 
 ### Phase 3 — Tests
 
-- [ ] [Task 6] Tests — `BookToolHandlerTests` (10 test cases) → [#47](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/47)
+- [X] [Task 6] Tests — `BookToolHandlerTests` (10 test cases) → [#47](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/47)
   - Depends on: #45
-- [ ] [P] [Task 7] Tests — `ChapterToolHandlerTests`, `PageToolHandlerTests`, `ShelfToolHandlerTests` (11 test cases) → [#50](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/50)
+- [X] [P] [Task 7] Tests — `ChapterToolHandlerTests`, `PageToolHandlerTests`, `ShelfToolHandlerTests` (11 test cases) → [#50](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/50)
   - Depends on: #43, #44, #46, #47 (follow test setup pattern from Task 6)
-- [ ] [P] [Task 8] Tests — `BookResourceHandlerTests`, `PageResourceHandlerTests` (4 test cases) → [#48](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/48)
+- [X] [P] [Task 8] Tests — `BookResourceHandlerTests`, `PageResourceHandlerTests` (4 test cases) → [#48](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/48)
   - Depends on: #49, #47 (follow test setup pattern from Task 6)
 
 ---

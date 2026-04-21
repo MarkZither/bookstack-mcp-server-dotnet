@@ -3,7 +3,7 @@
 **Feature**: FEAT-0014
 **Parent Issue**: [#14](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/14)
 **Decomposed**: 2026-04-20
-**Status**: Tasks created on GitHub Issues
+**Status**: All tasks completed — merged via PR #36
 
 ---
 
@@ -22,17 +22,17 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Phase 3 — Core Scaffold
 
-- [ ] [Task 4] Create stub source files (`Program.cs` and `PlaceholderTest.cs`) → [#22](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/22)
+- [X] [Task 4] Create stub source files (`Program.cs` and `PlaceholderTest.cs`) → [#22](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/22)
   - Depends on: #20, #19
 
 ### Phase 4 — CI/CD
 
-- [ ] [Task 5] Create GitHub Actions CI workflow (`.github/workflows/ci.yml`) → [#23](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/23)
+- [X] [Task 5] Create GitHub Actions CI workflow (`.github/workflows/ci.yml`) → [#23](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/23)
   - Depends on: #21, #20, #22
 
 ### Phase 5 — Polish
 
-- [ ] [Task 6] Update README with CI badge and Quickstart section → [#24](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/24)
+- [X] [Task 6] Update README with CI badge and Quickstart section → [#24](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/24)
   - Depends on: #23
 
 ---

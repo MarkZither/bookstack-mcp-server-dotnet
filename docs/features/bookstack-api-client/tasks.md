@@ -3,7 +3,7 @@
 **Feature**: FEAT-0018
 **Parent Issue**: [#18](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/18)
 **Decomposed**: 2026-04-20
-**Status**: Tasks created on GitHub Issues
+**Status**: All tasks completed — merged via PR #42
 
 ---
 
@@ -13,44 +13,44 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Phase 1 — Configuration & Options
 
-- [ ] [Task 1] `BookStackApiClientOptions` POCO + `IValidateOptions` validator → [#26](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/26)
+- [X] [Task 1] `BookStackApiClientOptions` POCO + `IValidateOptions` validator → [#26](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/26)
 
 ### Phase 2 — Shared Types & Exceptions
 
-- [ ] [P] [Tasks 2–3] `BookStackApiException` + `ListResponse<T>` / `ExportFormat` / `ContentType` shared types → [#27](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/27)
+- [X] [P] [Tasks 2–3] `BookStackApiException` + `ListResponse<T>` / `ExportFormat` / `ContentType` shared types → [#27](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/27)
   - Depends on: #26
 
 ### Phase 3 — Response Models
 
-- [ ] [P] [Task 4] Response model types (all 13 entity model files under `api/models/`) → [#28](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/28)
+- [X] [P] [Task 4] Response model types (all 13 entity model files under `api/models/`) → [#28](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/28)
   - Depends on: #27
 
 ### Phase 4 — Interface
 
-- [ ] [Task 5] `IBookStackApiClient` interface (47 typed async methods) → [#29](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/29)
+- [X] [Task 5] `IBookStackApiClient` interface (47 typed async methods) → [#29](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/29)
   - Depends on: #27, #28
 
 ### Phase 5 — Delegating Handlers
 
-- [ ] [P] [Task 6] `AuthenticationHandler` (`DelegatingHandler` — inject Authorization header) → [#30](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/30)
+- [X] [P] [Task 6] `AuthenticationHandler` (`DelegatingHandler` — inject Authorization header) → [#30](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/30)
   - Depends on: #26
-- [ ] [P] [Task 7] `RateLimitHandler` (`DelegatingHandler` — X-RateLimit-* header strategy) → [#31](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/31)
+- [X] [P] [Task 7] `RateLimitHandler` (`DelegatingHandler` — X-RateLimit-* header strategy) → [#31](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/31)
 
 ### Phase 6 — Implementation
 
-- [ ] [Task 8] `BookStackApiClient` core partial + Books partial → [#32](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/32)
+- [X] [Task 8] `BookStackApiClient` core partial + Books partial → [#32](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/32)
   - Depends on: #26, #27, #28, #29
-- [ ] [Task 9–12] Remaining entity partials (Chapters, Pages, Shelves, Users, Roles, Attachments, Images, Search, RecycleBin, Permissions, AuditLog, System) → [#33](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/33)
+- [X] [Task 9–12] Remaining entity partials (Chapters, Pages, Shelves, Users, Roles, Attachments, Images, Search, RecycleBin, Permissions, AuditLog, System) → [#33](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/33)
   - Depends on: #32
 
 ### Phase 7 — DI Registration
 
-- [ ] [Task 13] `AddBookStackApiClient` DI extension method + startup validation → [#34](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/34)
+- [X] [Task 13] `AddBookStackApiClient` DI extension method + startup validation → [#34](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/34)
   - Depends on: #26, #29, #30, #31, #32
 
 ### Phase 8 — Tests
 
-- [ ] [Tasks 14–22] Test infrastructure + unit tests (MockHttpMessageHandler, all entity groups, handlers, DI) → [#35](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/35)
+- [X] [Tasks 14–22] Test infrastructure + unit tests (MockHttpMessageHandler, all entity groups, handlers, DI) → [#35](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/35)
   - Depends on: #26, #27, #28, #29, #30, #31, #32, #33, #34
 
 ---

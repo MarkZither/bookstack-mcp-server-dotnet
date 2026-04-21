@@ -3,7 +3,7 @@
 **Feature**: FEAT-0008
 **Parent Issue**: [#8](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/8)
 **Decomposed**: 2026-04-20
-**Status**: Tasks created on GitHub Issues
+**Status**: All tasks completed — merged via PR #42
 
 ---
 
@@ -13,23 +13,23 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Phase 1 — Project Setup
 
-- [ ] [Task 1] Update `BookStack.Mcp.Server.csproj` — SDK Web + MCP NuGet packages → [#40](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/40)
+- [X] [Task 1] Update `BookStack.Mcp.Server.csproj` — SDK Web + MCP NuGet packages → [#40](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/40)
 
 ### Phase 2 — Composition Root
 
-- [ ] [Task 2] Implement `Program.cs` — transport selection, DI wiring, stdio + HTTP host branches → [#37](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/37)
+- [X] [Task 2] Implement `Program.cs` — transport selection, DI wiring, stdio + HTTP host branches → [#37](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/37)
   - Depends on: #40
 
 ### Phase 3 — Handler Stubs
 
-- [ ] [P] [Task 3] Stub 14 tool handler classes under `tools/` with `[McpServerToolType]` attributes → [#38](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/38)
+- [X] [P] [Task 3] Stub 14 tool handler classes under `tools/` with `[McpServerToolType]` attributes → [#38](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/38)
   - Depends on: #40
-- [ ] [P] [Task 4] Stub 6 resource handler classes under `resources/` with `[McpServerResourceType]` attributes → [#39](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/39)
+- [X] [P] [Task 4] Stub 6 resource handler classes under `resources/` with `[McpServerResourceType]` attributes → [#39](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/39)
   - Depends on: #40
 
 ### Phase 4 — Tests
 
-- [ ] [Task 5] Tests — attribute verification, assembly scan counts, tool name non-empty checks → [#41](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/41)
+- [X] [Task 5] Tests — attribute verification, assembly scan counts, tool name non-empty checks → [#41](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/41)
   - Depends on: #38, #39
 
 ---
