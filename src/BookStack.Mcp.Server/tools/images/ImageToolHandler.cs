@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Images;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #16 is implemented
 internal sealed class ImageToolHandler(IBookStackApiClient client, ILogger<ImageToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;

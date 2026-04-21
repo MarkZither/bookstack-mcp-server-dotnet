@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.RecycleBin;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #6 is implemented
 internal sealed class RecycleBinToolHandler(IBookStackApiClient client, ILogger<RecycleBinToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;

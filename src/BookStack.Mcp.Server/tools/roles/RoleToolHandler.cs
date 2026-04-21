@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Roles;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #9 is implemented
 internal sealed class RoleToolHandler(IBookStackApiClient client, ILogger<RoleToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;

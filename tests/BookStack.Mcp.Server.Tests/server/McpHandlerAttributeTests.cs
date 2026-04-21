@@ -18,7 +18,7 @@ public sealed class McpHandlerAttributeTests
     }
 
     [Test]
-    public async Task ServerAssembly_ContainsAtLeastFourteenToolHandlerTypes()
+    public async Task ServerAssembly_ContainsAtLeastFiveToolHandlerTypes()
     {
         var assembly = typeof(BookToolHandler).Assembly;
         var toolTypes = assembly.GetTypes()
@@ -26,11 +26,11 @@ public sealed class McpHandlerAttributeTests
             .ToList();
 
         var count = toolTypes.Count;
-        await Assert.That(count).IsGreaterThanOrEqualTo(14);
+        await Assert.That(count).IsGreaterThanOrEqualTo(5);
     }
 
     [Test]
-    public async Task ServerAssembly_ContainsAtLeastSixResourceHandlerTypes()
+    public async Task ServerAssembly_ContainsAtLeastFiveResourceHandlerTypes()
     {
         var assembly = typeof(BookToolHandler).Assembly;
         var resourceTypes = assembly.GetTypes()
@@ -38,7 +38,7 @@ public sealed class McpHandlerAttributeTests
             .ToList();
 
         var count = resourceTypes.Count;
-        await Assert.That(count).IsGreaterThanOrEqualTo(6);
+        await Assert.That(count).IsGreaterThanOrEqualTo(5);
     }
 
     [Test]

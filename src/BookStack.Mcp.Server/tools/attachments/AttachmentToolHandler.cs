@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Attachments;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #16 is implemented
 internal sealed class AttachmentToolHandler(IBookStackApiClient client, ILogger<AttachmentToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;

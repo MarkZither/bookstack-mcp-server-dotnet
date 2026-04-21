@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Resources.Users;
 
-[McpServerResourceType]
+// [McpServerResourceType] — hidden until #9 is implemented
 internal sealed class UserResourceHandler(
     IBookStackApiClient client, ILogger<UserResourceHandler> logger)
 {
