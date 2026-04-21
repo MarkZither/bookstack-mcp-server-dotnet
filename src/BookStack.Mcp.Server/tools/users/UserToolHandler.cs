@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Users;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #9 is implemented
 internal sealed class UserToolHandler(IBookStackApiClient client, ILogger<UserToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;

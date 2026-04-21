@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Permissions;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #6 is implemented
 internal sealed class PermissionToolHandler(IBookStackApiClient client, ILogger<PermissionToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;

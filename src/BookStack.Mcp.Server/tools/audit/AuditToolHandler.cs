@@ -5,7 +5,7 @@ using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Audit;
 
-[McpServerToolType]
+// [McpServerToolType] — hidden until #6 is implemented
 internal sealed class AuditToolHandler(IBookStackApiClient client, ILogger<AuditToolHandler> logger)
 {
     private readonly IBookStackApiClient _client = client;
