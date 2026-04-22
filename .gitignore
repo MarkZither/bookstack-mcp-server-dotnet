@@ -421,3 +421,4 @@ FodyWeavers.xsd
 vscode-extension/bin/bookstack-mcp-server.exe
 vscode-extension/bin/bookstack-mcp-server-linux
 vscode-extension/dist/
+publish-local/
