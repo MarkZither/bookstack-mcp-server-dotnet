@@ -20,6 +20,6 @@ public sealed class BookStackApiException : Exception
         403 => "Permission denied (HTTP 403) — the API token does not have access to this resource.",
         404 => $"Resource not found (HTTP 404){(errorMessage is null ? "." : $": {errorMessage}")}",
         422 => $"Validation error (HTTP 422){(errorMessage is null ? "." : $": {errorMessage}")}",
-        _   => $"BookStack API error {statusCode}{(errorMessage is null ? "." : $": {errorMessage}")}",
+        _ => $"BookStack API error {statusCode}{(errorMessage is null ? "." : $": {errorMessage}")}",
     };
 }

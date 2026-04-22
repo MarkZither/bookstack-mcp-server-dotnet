@@ -62,7 +62,9 @@ static Dictionary<string, string?> MapBookStackEnvVars()
 
     var baseUrl = Environment.GetEnvironmentVariable("BOOKSTACK_BASE_URL");
     if (baseUrl is not null)
+    {
         map["BookStack:BaseUrl"] = baseUrl;
+    }
 
     var tokenSecret = Environment.GetEnvironmentVariable("BOOKSTACK_TOKEN_SECRET");
     if (tokenSecret is not null)
