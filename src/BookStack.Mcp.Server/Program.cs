@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using BookStack.Mcp.Server.Api;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ if (transport == "stdio")
     builder.Logging.AddConsole(options =>
         options.LogToStandardErrorThreshold = LogLevel.Trace);
 
+    builder.Configuration.AddInMemoryCollection(MapBookStackEnvVars());
     builder.Services.AddBookStackApiClient(builder.Configuration);
     builder.Services
         .AddMcpServer()
@@ -39,6 +41,7 @@ else
         Environment.GetEnvironmentVariable("BOOKSTACK_MCP_HTTP_PORT"), out var p) ? p : 3000;
 
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddInMemoryCollection(MapBookStackEnvVars());
     builder.Services.AddBookStackApiClient(builder.Configuration);
     builder.Services
         .AddMcpServer()
@@ -52,3 +55,27 @@ else
 }
 
 return 0;
+
+static Dictionary<string, string?> MapBookStackEnvVars()
+{
+    var map = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+    var baseUrl = Environment.GetEnvironmentVariable("BOOKSTACK_BASE_URL");
+    if (baseUrl is not null)
+    {
+        map["BookStack:BaseUrl"] = baseUrl;
+    }
+
+    var tokenSecret = Environment.GetEnvironmentVariable("BOOKSTACK_TOKEN_SECRET");
+    if (tokenSecret is not null)
+    {
+        var colonIndex = tokenSecret.IndexOf(':');
+        if (colonIndex > 0)
+        {
+            map["BookStack:TokenId"] = tokenSecret[..colonIndex];
+            map["BookStack:TokenSecret"] = tokenSecret[(colonIndex + 1)..];
+        }
+    }
+
+    return map;
+}

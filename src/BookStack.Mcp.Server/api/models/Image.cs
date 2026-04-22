@@ -9,6 +9,6 @@ public sealed class Image
     public string Path { get; set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-    public int CreatedBy { get; set; }
-    public int UpdatedBy { get; set; }
+    public UserSummary? CreatedBy { get; set; }
+    public UserSummary? UpdatedBy { get; set; }
 }
