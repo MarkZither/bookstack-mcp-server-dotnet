@@ -4,3 +4,5 @@ node_modules/**
 tsconfig.json
 eslint.config.mjs
 bin/.gitkeep
+media/*.svg
+media/*:Zone.Identifier

@@ -60,6 +60,10 @@ Check the **Output** panel → select **BookStack MCP Server** for activation lo
 | URL not found | Ensure URL ends with `/` and points to your BookStack root |
 | Platform not supported | macOS support is planned — see [#15](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/15) |
 
+## Privacy
+
+This extension sends requests only to the BookStack instance URL you configure. No data is collected by the extension author. Your API token is stored in VS Code settings on your local machine.
+
 ## Contributing / Bug Reports
 
 - [GitHub Issues](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues)

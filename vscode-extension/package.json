@@ -11,6 +11,12 @@
   "categories": ["AI", "Other"],
   "keywords": ["bookstack", "mcp", "copilot", "knowledge-base"],
   "license": "MIT",
+  "homepage": "https://github.com/MarkZither/bookstack-mcp-server-dotnet#readme",
+  "pricing": "Free",
+  "galleryBanner": {
+    "color": "#DD0000",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/MarkZither/bookstack-mcp-server-dotnet"
@@ -38,6 +44,7 @@
         "bookstack.tokenSecret": {
           "type": "string",
           "default": "",
+          "secret": true,
           "markdownDescription": "BookStack API token secret corresponding to `bookstack.tokenId`."
         }
       }

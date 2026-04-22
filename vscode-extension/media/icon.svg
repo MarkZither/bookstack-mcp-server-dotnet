@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Background rounded rect - Garibaldi / Nottingham Forest red -->
+  <rect width="128" height="128" rx="18" ry="18" fill="#DD0000"/>
+
+  <!-- Open book (two pages, spine in centre) -->
+  <!-- Left page -->
+  <path d="M20 42 Q20 36 26 34 L60 30 L60 88 L26 92 Q20 90 20 84 Z"
+        fill="#FFFFFF" opacity="0.92"/>
+  <!-- Right page -->
+  <path d="M108 42 Q108 36 102 34 L68 30 L68 88 L102 92 Q108 90 108 84 Z"
+        fill="#FFFFFF" opacity="0.92"/>
+  <!-- Spine shadow -->
+  <rect x="58" y="30" width="12" height="58" rx="2" fill="#B80000" opacity="0.5"/>
+
+  <!-- Left page lines -->
+  <line x1="30" y1="46" x2="56" y2="44" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="30" y1="54" x2="56" y2="52" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="30" y1="62" x2="56" y2="60" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="30" y1="70" x2="56" y2="68" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Right page lines -->
+  <line x1="98" y1="46" x2="72" y2="44" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="98" y1="54" x2="72" y2="52" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="98" y1="62" x2="72" y2="60" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="98" y1="70" x2="72" y2="68" stroke="#DD0000" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- MCP connection nodes (bottom strip) -->
+  <!-- Connection lines first so circles sit on top -->
+  <line x1="32" y1="108" x2="64" y2="108" stroke="#FFFFFF" stroke-width="2" opacity="0.7"/>
+  <line x1="64" y1="108" x2="96" y2="108" stroke="#FFFFFF" stroke-width="2" opacity="0.7"/>
+  <line x1="32" y1="108" x2="48" y2="98"  stroke="#FFFFFF" stroke-width="1.5" opacity="0.5"/>
+  <line x1="96" y1="108" x2="80" y2="98"  stroke="#FFFFFF" stroke-width="1.5" opacity="0.5"/>
+  <line x1="64" y1="108" x2="64" y2="96"  stroke="#FFFFFF" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Nodes -->
+  <circle cx="32"  cy="108" r="5" fill="#FFFFFF"/>
+  <circle cx="64"  cy="108" r="6" fill="#FFFFFF"/>
+  <circle cx="96"  cy="108" r="5" fill="#FFFFFF"/>
+  <circle cx="48"  cy="98"  r="3.5" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="80"  cy="98"  r="3.5" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="64"  cy="96"  r="3.5" fill="#FFFFFF" opacity="0.8"/>
+</svg>
