@@ -1,0 +1,60 @@
+{
+  "name": "bookstack-mcp-server",
+  "displayName": "BookStack MCP Server",
+  "description": "MCP server for BookStack — gives AI assistants (GitHub Copilot, Claude) access to your BookStack knowledge base.",
+  "version": "0.1.0",
+  "publisher": "MarkZither",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "extensionKind": ["workspace"],
+  "categories": ["AI", "Other"],
+  "keywords": ["bookstack", "mcp", "copilot", "knowledge-base"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarkZither/bookstack-mcp-server-dotnet"
+  },
+  "bugs": {
+    "url": "https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues"
+  },
+  "icon": "media/icon.png",
+  "main": "./dist/extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "configuration": {
+      "title": "BookStack MCP Server",
+      "properties": {
+        "bookstack.url": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "URL of your BookStack instance. Example: `https://demo.bookstackapp.com/`"
+        },
+        "bookstack.tokenId": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "BookStack API token ID. Generate under BookStack → **Settings → API Tokens**."
+        },
+        "bookstack.tokenSecret": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "BookStack API token secret corresponding to `bookstack.tokenId`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --platform=node --external:vscode --outfile=dist/extension.js",
+    "watch": "esbuild src/extension.ts --bundle --platform=node --external:vscode --outfile=dist/extension.js --watch",
+    "lint": "eslint src",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.99.0",
+    "@vscode/vsce": "^3",
+    "esbuild": "^0.25",
+    "eslint": "^9",
+    "typescript": "~5.7",
+    "typescript-eslint": "^8"
+  }
+}

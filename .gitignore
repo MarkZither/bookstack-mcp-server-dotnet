@@ -416,3 +416,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# VS Code extension — platform binaries (built by CI, never committed)
+vscode-extension/bin/bookstack-mcp-server.exe
+vscode-extension/bin/bookstack-mcp-server-linux
+vscode-extension/dist/

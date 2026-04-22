@@ -31,6 +31,7 @@
 | [#4](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/4) | Epic | Marketplace Distribution | — | — | — | epic, distribution, p3 |
 | [#15](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/15) | Feature | VS Code Extension Packaging | #4 | P3 | Medium | feature, distribution, p3 |
 | [#13](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/13) | Feature | Visual Studio Extension Packaging | #4 | P3 | Medium | feature, distribution, p3 |
+| [#54](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/54) | Feature | Book/Shelf Scope Filtering for MCP Tools | #2 | P3 | Low | feature, tools-resources, p3 |
 
 ## Dependency Graph
 
