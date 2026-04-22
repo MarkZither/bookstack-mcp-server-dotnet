@@ -51,7 +51,7 @@ Once configured, your AI assistant has access to:
 
 ## Troubleshooting
 
-Check the **Output** panel → select **BookStack MCP Server** for activation logs.
+Check the **Output** panel → select **BookStack MCP Server** for activation logs. For MCP protocol logs, check **Output** → **MCP**.
 
 | Symptom | Fix |
 |---------|-----|
@@ -59,6 +59,30 @@ Check the **Output** panel → select **BookStack MCP Server** for activation lo
 | 401 Unauthorized | Check token ID and secret are correct and not swapped |
 | URL not found | Ensure URL ends with `/` and points to your BookStack root |
 | Platform not supported | macOS support is planned — see [#15](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/15) |
+
+### Log Levels
+
+The server logs at `Information` level by default. To enable `Debug` logging, set the following environment variable before VS Code launches the server:
+
+```
+Logging__LogLevel__BookStack.Mcp.Server=Debug
+```
+
+On Linux/macOS, add it to your shell profile (e.g. `~/.bashrc`) or set it in your `.vscode/settings.json` terminal env:
+
+```json
+"terminal.integrated.env.linux": {
+    "Logging__LogLevel__BookStack.Mcp.Server": "Debug"
+}
+```
+
+You can also scope debug logging to a specific layer:
+
+| Environment variable | Effect |
+|----------------------|--------|
+| `Logging__LogLevel__BookStack.Mcp.Server=Debug` | All server logs |
+| `Logging__LogLevel__BookStack.Mcp.Server.Api=Debug` | API client only |
+| `Logging__LogLevel__Microsoft=Warning` | Suppress framework noise |
 
 ## Privacy
 
