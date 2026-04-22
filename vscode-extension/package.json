@@ -28,6 +28,12 @@
   "main": "./dist/extension.js",
   "activationEvents": ["onStartupFinished"],
   "contributes": {
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "bookstack",
+        "label": "BookStack"
+      }
+    ],
     "configuration": {
       "title": "BookStack MCP Server",
       "properties": {
