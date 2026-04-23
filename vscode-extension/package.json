@@ -2,14 +2,14 @@
   "name": "bookstack-mcp-server",
   "displayName": "BookStack MCP Server",
   "description": "MCP server for BookStack — gives AI assistants (GitHub Copilot, Claude) access to your BookStack knowledge base.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "MarkZither",
   "engines": {
     "vscode": "^1.99.0"
   },
   "extensionKind": ["workspace"],
-  "categories": ["AI", "Other"],
-  "keywords": ["bookstack", "mcp", "copilot", "knowledge-base"],
+  "categories": ["AI", "Chat"],
+  "keywords": ["bookstack", "mcp", "model context protocol", "language-model-tools", "copilot", "knowledge-base"],
   "license": "MIT",
   "homepage": "https://github.com/MarkZither/bookstack-mcp-server-dotnet#readme",
   "pricing": "Free",

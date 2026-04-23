@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-23
+
+### Changed
+- Add `Chat` category and `language-model-tools` keyword so the extension appears in the VS Code Extensions view MCP filter
+
 ## [0.1.0] - 2026-04-22
 
 ### Added
