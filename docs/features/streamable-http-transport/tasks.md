@@ -15,7 +15,7 @@
 
 ## Phase 2 — HTTP Middleware Pipeline
 
-- [ ] Add CORS middleware and `GET /health` endpoint to HTTP branch in `src/BookStack.Mcp.Server/Program.cs` → [#69](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/69)
+- [ ] Add `GET /health` endpoint to HTTP branch (auth bypassed) → [#69](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/69)
 - [ ] Implement `HttpBearerAuthMiddleware` with `CryptographicOperations.FixedTimeEquals`, path bypass for `/health`, and startup warning in `src/BookStack.Mcp.Server/HttpBearerAuthMiddleware.cs` → [#70](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/70)
 
 ## Phase 3 — Both-Mode Hosting
