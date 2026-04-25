@@ -1,7 +1,6 @@
-// BookStack MCP Server — entry point (stub)
-// Full implementation tracked in https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/14
-
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using BookStack.Mcp.Server.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +10,10 @@ using ModelContextProtocol.Server;
 
 var transport = Environment.GetEnvironmentVariable("BOOKSTACK_MCP_TRANSPORT") ?? "stdio";
 
-if (transport is not ("stdio" or "http"))
+if (transport is not ("stdio" or "http" or "both"))
 {
     Console.Error.WriteLine(
-        $"Invalid BOOKSTACK_MCP_TRANSPORT value: '{transport}'. Valid values: stdio, http.");
+        $"Invalid BOOKSTACK_MCP_TRANSPORT value: '{transport}'. Valid values: stdio, http, both.");
     return 1;
 }
 
@@ -41,20 +40,85 @@ else
         Environment.GetEnvironmentVariable("BOOKSTACK_MCP_HTTP_PORT"), out var p) ? p : 3000;
 
     var builder = WebApplication.CreateBuilder(args);
+
+    if (transport == "both")
+    {
+        builder.Logging.AddConsole(options =>
+            options.LogToStandardErrorThreshold = LogLevel.Trace);
+    }
+
     builder.Configuration.AddInMemoryCollection(MapBookStackEnvVars());
     builder.Services.AddBookStackApiClient(builder.Configuration);
-    builder.Services
+
+    var mcpBuilder = builder.Services
         .AddMcpServer()
         .WithHttpTransport()
         .WithToolsFromAssembly(Assembly.GetExecutingAssembly())
         .WithResourcesFromAssembly(Assembly.GetExecutingAssembly());
 
+    if (transport == "both")
+    {
+        mcpBuilder.WithStdioServerTransport();
+    }
+
     var app = builder.Build();
-    app.MapMcp();
-    await app.RunAsync($"http://0.0.0.0:{port}").ConfigureAwait(false);
+
+    var authToken = app.Configuration["BOOKSTACK_MCP_HTTP_AUTH_TOKEN"]
+                    ?? Environment.GetEnvironmentVariable("BOOKSTACK_MCP_HTTP_AUTH_TOKEN");
+
+    if (string.IsNullOrEmpty(authToken))
+    {
+        app.Logger.LogWarning(
+            "HTTP authentication is disabled. Set BOOKSTACK_MCP_HTTP_AUTH_TOKEN to enable.");
+
+        app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+        app.MapMcp();
+    }
+    else
+    {
+        var authTokenBytes = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(authToken));
+
+        app.Use(async (ctx, next) =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/mcp"))
+            {
+                var header = ctx.Request.Headers.Authorization.ToString();
+                if (!IsAuthorized(header, authTokenBytes))
+                {
+                    ctx.Response.StatusCode = 401;
+                    return;
+                }
+            }
+
+            await next(ctx).ConfigureAwait(false);
+        });
+
+        app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+        app.MapMcp();
+    }
+
+    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
+    {
+        await app.RunAsync($"http://0.0.0.0:{port}").ConfigureAwait(false);
+    }
+    else
+    {
+        await app.RunAsync().ConfigureAwait(false);
+    }
 }
 
 return 0;
+
+static bool IsAuthorized(string authorizationHeader, ReadOnlyMemory<byte> expected)
+{
+    const string bearerPrefix = "Bearer ";
+    if (!authorizationHeader.StartsWith(bearerPrefix, StringComparison.Ordinal))
+        return false;
+
+    var provided = Encoding.UTF8.GetBytes(authorizationHeader[bearerPrefix.Length..]);
+    return provided.Length == expected.Length
+        && CryptographicOperations.FixedTimeEquals(expected.Span, provided);
+}
 
 static Dictionary<string, string?> MapBookStackEnvVars()
 {
@@ -79,3 +143,5 @@ static Dictionary<string, string?> MapBookStackEnvVars()
 
     return map;
 }
+
+public partial class Program { }
