@@ -14,6 +14,9 @@ public static class BookStackServiceCollectionExtensions
         services.Configure<BookStackApiClientOptions>(
             configuration.GetSection("BookStack"));
 
+        services.Configure<ScopeFilterOptions>(
+            configuration.GetSection("BookStack"));
+
         services.AddSingleton<IValidateOptions<BookStackApiClientOptions>,
             BookStackApiClientOptionsValidator>();
 

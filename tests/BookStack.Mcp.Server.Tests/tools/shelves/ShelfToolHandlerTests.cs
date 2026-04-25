@@ -1,9 +1,11 @@
 using System.Text.Json;
 using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
+using BookStack.Mcp.Server.Config;
 using BookStack.Mcp.Server.Tools.Shelves;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace BookStack.Mcp.Server.Tests.Tools.Shelves;
@@ -15,7 +17,10 @@ public sealed class ShelfToolHandlerTests
 
     public ShelfToolHandlerTests()
     {
-        _handler = new ShelfToolHandler(_client.Object, NullLogger<ShelfToolHandler>.Instance);
+        _handler = new ShelfToolHandler(
+            _client.Object,
+            NullLogger<ShelfToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions()));
     }
 
     [Test]
@@ -60,5 +65,30 @@ public sealed class ShelfToolHandlerTests
         var doc = JsonDocument.Parse(result);
         doc.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
         doc.RootElement.GetProperty("message").GetString().Should().Contain("4");
+    }
+
+    [Test]
+    public async Task ListShelvesAsync_WithShelfScope_FiltersResults()
+    {
+        var scopedHandler = new ShelfToolHandler(
+            _client.Object,
+            NullLogger<ShelfToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions { ScopedShelves = ["my-shelf"] }));
+
+        _client.Setup(c => c.ListShelvesAsync(It.IsAny<ListQueryParams?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Bookshelf>
+            {
+                Total = 2,
+                Data = [
+                    new Bookshelf { Id = 1, Slug = "my-shelf" },
+                    new Bookshelf { Id = 2, Slug = "other-shelf" },
+                ],
+            });
+
+        var json = await scopedHandler.ListShelvesAsync().ConfigureAwait(false);
+
+        var doc2 = JsonDocument.Parse(json);
+        doc2.RootElement.GetProperty("total").GetInt32().Should().Be(1);
+        doc2.RootElement.GetProperty("data")[0].GetProperty("slug").GetString().Should().Be("my-shelf");
     }
 }

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using BookStack.Mcp.Server.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -141,7 +142,27 @@ static Dictionary<string, string?> MapBookStackEnvVars()
         }
     }
 
+    AddScopeEntries(map, "BOOKSTACK_SCOPED_BOOKS",   "BookStack:ScopedBooks");
+    AddScopeEntries(map, "BOOKSTACK_SCOPED_SHELVES", "BookStack:ScopedShelves");
+
     return map;
 }
 
-public partial class Program { }
+static void AddScopeEntries(Dictionary<string, string?> map, string envVar, string configPrefix)
+{
+    var raw = Environment.GetEnvironmentVariable(envVar);
+    if (raw is null) return;
+
+    var index = 0;
+    foreach (var entry in raw.Split(',').Select(e => e.Trim()).Where(e => e.Length > 0))
+    {
+        if (!ScopeEntryRegex.IsMatch(entry))
+            continue;
+        map[$"{configPrefix}:{index++}"] = entry;
+    }
+}
+
+public partial class Program
+{
+    private static readonly Regex ScopeEntryRegex = new(@"^[a-zA-Z0-9_-]+$", RegexOptions.Compiled);
+}

@@ -3,16 +3,22 @@ using System.ComponentModel;
 using System.Text.Json;
 using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
+using BookStack.Mcp.Server.Config;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Shelves;
 
 [McpServerToolType]
-internal sealed class ShelfToolHandler(IBookStackApiClient client, ILogger<ShelfToolHandler> logger)
+internal sealed class ShelfToolHandler(
+    IBookStackApiClient client,
+    ILogger<ShelfToolHandler> logger,
+    IOptions<ScopeFilterOptions> scopeOptions)
 {
     private readonly IBookStackApiClient _client = client;
     private readonly ILogger<ShelfToolHandler> _logger = logger;
+    private readonly IOptions<ScopeFilterOptions> _scopeOptions = scopeOptions;
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -34,6 +40,14 @@ internal sealed class ShelfToolHandler(IBookStackApiClient client, ILogger<Shelf
                 ? new ListQueryParams { Count = count, Offset = offset, Sort = sort }
                 : null;
             var result = await _client.ListShelvesAsync(query, ct).ConfigureAwait(false);
+            var scope = _scopeOptions.Value;
+            if (scope.HasShelfScope)
+            {
+                var filtered = result.Data
+                    .Where(s => ScopeFilter.MatchesScope(s.Id, s.Slug, scope.ScopedShelves))
+                    .ToList();
+                result = new ListResponse<Bookshelf> { Total = filtered.Count, From = result.From, To = result.To, Data = filtered };
+            }
             return JsonSerializer.Serialize(result, _jsonOptions);
         }
         catch (BookStackApiException ex) when (ex.StatusCode == 422)

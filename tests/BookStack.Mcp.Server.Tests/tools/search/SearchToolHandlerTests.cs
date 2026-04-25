@@ -1,9 +1,11 @@
 using System.Text.Json;
 using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
+using BookStack.Mcp.Server.Config;
 using BookStack.Mcp.Server.Tools.Search;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace BookStack.Mcp.Server.Tests.Tools.Search;
@@ -15,7 +17,10 @@ public sealed class SearchToolHandlerTests
 
     public SearchToolHandlerTests()
     {
-        _handler = new SearchToolHandler(_client.Object, NullLogger<SearchToolHandler>.Instance);
+        _handler = new SearchToolHandler(
+            _client.Object,
+            NullLogger<SearchToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions()));
     }
 
     [Test]
@@ -82,5 +87,53 @@ public sealed class SearchToolHandlerTests
 
         var doc = JsonDocument.Parse(result);
         doc.RootElement.GetProperty("error").GetString().Should().Be("api_error");
+    }
+
+    [Test]
+    public async Task SearchAsync_WithBookScope_FiltersBookItems()
+    {
+        var scopedHandler = new SearchToolHandler(
+            _client.Object,
+            NullLogger<SearchToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions { ScopedBooks = ["allowed-book"] }));
+
+        _client.Setup(c => c.SearchAsync(It.IsAny<SearchRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SearchResult
+            {
+                Total = 3,
+                Data = [
+                    new SearchResultItem { Id = 1, Slug = "allowed-book",  Type = "book" },
+                    new SearchResultItem { Id = 2, Slug = "other-book",    Type = "book" },
+                    new SearchResultItem { Id = 3, Slug = "page-in-allowed", Type = "page",
+                        Book = new Book { Id = 1, Slug = "allowed-book" } },
+                ],
+            });
+
+        var json = await scopedHandler.SearchAsync("test").ConfigureAwait(false);
+
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("total").GetInt32().Should().Be(2);
+        doc.RootElement.GetProperty("data").GetArrayLength().Should().Be(2);
+    }
+
+    [Test]
+    public async Task SearchAsync_WithBookScope_ExcludesPageWithNoBook()
+    {
+        var scopedHandler = new SearchToolHandler(
+            _client.Object,
+            NullLogger<SearchToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions { ScopedBooks = ["allowed-book"] }));
+
+        _client.Setup(c => c.SearchAsync(It.IsAny<SearchRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SearchResult
+            {
+                Total = 1,
+                Data = [new SearchResultItem { Id = 5, Slug = "orphan-page", Type = "page", Book = null }],
+            });
+
+        var json = await scopedHandler.SearchAsync("test").ConfigureAwait(false);
+
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("total").GetInt32().Should().Be(0);
     }
 }
