@@ -3,16 +3,22 @@ using System.ComponentModel;
 using System.Text.Json;
 using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
+using BookStack.Mcp.Server.Config;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
 
 namespace BookStack.Mcp.Server.Tools.Books;
 
 [McpServerToolType]
-internal sealed class BookToolHandler(IBookStackApiClient client, ILogger<BookToolHandler> logger)
+internal sealed class BookToolHandler(
+    IBookStackApiClient client,
+    ILogger<BookToolHandler> logger,
+    IOptions<ScopeFilterOptions> scopeOptions)
 {
     private readonly IBookStackApiClient _client = client;
     private readonly ILogger<BookToolHandler> _logger = logger;
+    private readonly IOptions<ScopeFilterOptions> _scopeOptions = scopeOptions;
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -34,6 +40,14 @@ internal sealed class BookToolHandler(IBookStackApiClient client, ILogger<BookTo
                 ? new ListQueryParams { Count = count, Offset = offset, Sort = sort }
                 : null;
             var result = await _client.ListBooksAsync(query, ct).ConfigureAwait(false);
+            var scope = _scopeOptions.Value;
+            if (scope.HasBookScope)
+            {
+                var filtered = result.Data
+                    .Where(b => ScopeFilter.MatchesScope(b.Id, b.Slug, scope.ScopedBooks))
+                    .ToList();
+                result = new ListResponse<Book> { Total = filtered.Count, From = result.From, To = result.To, Data = filtered };
+            }
             return JsonSerializer.Serialize(result, _jsonOptions);
         }
         catch (BookStackApiException ex) when (ex.StatusCode == 404)

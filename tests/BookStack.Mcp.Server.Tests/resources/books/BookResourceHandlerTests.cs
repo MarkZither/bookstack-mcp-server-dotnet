@@ -1,9 +1,11 @@
 using System.Text.Json;
 using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
+using BookStack.Mcp.Server.Config;
 using BookStack.Mcp.Server.Resources.Books;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace BookStack.Mcp.Server.Tests.Resources.Books;
@@ -15,7 +17,10 @@ public sealed class BookResourceHandlerTests
 
     public BookResourceHandlerTests()
     {
-        _handler = new BookResourceHandler(_client.Object, NullLogger<BookResourceHandler>.Instance);
+        _handler = new BookResourceHandler(
+            _client.Object,
+            NullLogger<BookResourceHandler>.Instance,
+            Options.Create(new ScopeFilterOptions()));
     }
 
     [Test]
@@ -41,5 +46,32 @@ public sealed class BookResourceHandlerTests
 
         var doc = JsonDocument.Parse(result);
         doc.RootElement.GetProperty("id").GetInt32().Should().Be(7);
+    }
+
+    [Test]
+    public async Task GetBooksResource_WithBookScope_FiltersResults()
+    {
+        var scopedHandler = new BookResourceHandler(
+            _client.Object,
+            NullLogger<BookResourceHandler>.Instance,
+            Options.Create(new ScopeFilterOptions { ScopedBooks = ["scoped-book"] }));
+
+        _client.Setup(c => c.ListBooksAsync(null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Book>
+            {
+                Total = 2,
+                Data =
+                [
+                    new Book { Id = 1, Slug = "scoped-book" },
+                    new Book { Id = 2, Slug = "excluded-book" },
+                ],
+            });
+
+        var result = await scopedHandler.GetBooksAsync().ConfigureAwait(false);
+
+        var doc = JsonDocument.Parse(result);
+        doc.RootElement.GetProperty("total").GetInt32().Should().Be(1);
+        doc.RootElement.GetProperty("data").GetArrayLength().Should().Be(1);
+        doc.RootElement.GetProperty("data")[0].GetProperty("slug").GetString().Should().Be("scoped-book");
     }
 }

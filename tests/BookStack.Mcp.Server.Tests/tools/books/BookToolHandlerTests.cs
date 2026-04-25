@@ -1,9 +1,11 @@
 using System.Text.Json;
 using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
+using BookStack.Mcp.Server.Config;
 using BookStack.Mcp.Server.Tools.Books;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace BookStack.Mcp.Server.Tests.Tools.Books;
@@ -15,7 +17,10 @@ public sealed class BookToolHandlerTests
 
     public BookToolHandlerTests()
     {
-        _handler = new BookToolHandler(_client.Object, NullLogger<BookToolHandler>.Instance);
+        _handler = new BookToolHandler(
+            _client.Object,
+            NullLogger<BookToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions()));
     }
 
     [Test]
@@ -144,5 +149,43 @@ public sealed class BookToolHandlerTests
         var result = await _handler.ExportBookAsync(1, "markdown").ConfigureAwait(false);
 
         result.Should().Be("# My Book");
+    }
+
+    [Test]
+    public async Task ListBooksAsync_WithBookScope_FiltersResults()
+    {
+        var scopedHandler = new BookToolHandler(
+            _client.Object,
+            NullLogger<BookToolHandler>.Instance,
+            Options.Create(new ScopeFilterOptions { ScopedBooks = ["my-book"] }));
+
+        _client.Setup(c => c.ListBooksAsync(It.IsAny<ListQueryParams?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Book>
+            {
+                Total = 2,
+                Data = [
+                    new Book { Id = 1, Slug = "my-book" },
+                    new Book { Id = 2, Slug = "other-book" },
+                ],
+            });
+
+        var json = await scopedHandler.ListBooksAsync().ConfigureAwait(false);
+
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("total").GetInt32().Should().Be(1);
+        doc.RootElement.GetProperty("data").GetArrayLength().Should().Be(1);
+        doc.RootElement.GetProperty("data")[0].GetProperty("slug").GetString().Should().Be("my-book");
+    }
+
+    [Test]
+    public async Task ListBooksAsync_WithEmptyScope_ReturnsAllBooks()
+    {
+        _client.Setup(c => c.ListBooksAsync(null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Book> { Total = 2, Data = [new Book { Id = 1 }, new Book { Id = 2 }] });
+
+        var json = await _handler.ListBooksAsync().ConfigureAwait(false);
+
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("total").GetInt32().Should().Be(2);
     }
 }
