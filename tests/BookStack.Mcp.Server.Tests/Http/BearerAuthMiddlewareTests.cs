@@ -1,7 +1,7 @@
-using FluentAssertions;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using FluentAssertions;
 
 namespace BookStack.Mcp.Server.Tests.Http;
 
