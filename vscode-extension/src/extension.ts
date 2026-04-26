@@ -44,6 +44,8 @@ export function activate(context: vscode.ExtensionContext): void {
                 const url = config.get<string>('url', '').trim();
                 const tokenId = config.get<string>('tokenId', '').trim();
                 const tokenSecret = config.get<string>('tokenSecret', '').trim();
+                const scopedBooks = config.get<string[]>('scopedBooks', []);
+                const scopedShelves = config.get<string[]>('scopedShelves', []);
 
                 if (!url || !tokenId || !tokenSecret) {
                     vscode.window.showWarningMessage(
@@ -68,6 +70,8 @@ export function activate(context: vscode.ExtensionContext): void {
                         {
                             BOOKSTACK_BASE_URL: url,
                             BOOKSTACK_TOKEN_SECRET: `${tokenId}:${tokenSecret}`,
+                            ...(scopedBooks.length > 0 && { BOOKSTACK_SCOPED_BOOKS: scopedBooks.join(',') }),
+                            ...(scopedShelves.length > 0 && { BOOKSTACK_SCOPED_SHELVES: scopedShelves.join(',') }),
                         }
                     )
                 ];

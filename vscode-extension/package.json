@@ -52,6 +52,18 @@
           "default": "",
           "secret": true,
           "markdownDescription": "BookStack API token secret corresponding to `bookstack.tokenId`."
+        },
+        "bookstack.scopedBooks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "markdownDescription": "Restrict the MCP server to specific books. Each entry is a book ID (e.g. `42`) or slug (e.g. `my-book`). Leave empty for no restriction."
+        },
+        "bookstack.scopedShelves": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "markdownDescription": "Restrict the MCP server to specific shelves. Each entry is a shelf ID (e.g. `5`) or slug (e.g. `my-shelf`). Leave empty for no restriction."
         }
       }
     }
