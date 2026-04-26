@@ -1,6 +1,6 @@
-using FluentAssertions;
 using System.Net;
 using System.Text.Json;
+using FluentAssertions;
 
 namespace BookStack.Mcp.Server.Tests.Http;
 

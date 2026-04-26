@@ -7,9 +7,14 @@ internal static class ScopeFilter
         foreach (var entry in scope)
         {
             if (int.TryParse(entry, out var scopeId) && scopeId == id)
+            {
                 return true;
+            }
+
             if (string.Equals(entry, slug, StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
         }
         return false;
     }

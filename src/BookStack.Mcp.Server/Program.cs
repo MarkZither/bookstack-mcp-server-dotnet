@@ -114,7 +114,9 @@ static bool IsAuthorized(string authorizationHeader, ReadOnlyMemory<byte> expect
 {
     const string bearerPrefix = "Bearer ";
     if (!authorizationHeader.StartsWith(bearerPrefix, StringComparison.Ordinal))
+    {
         return false;
+    }
 
     var provided = Encoding.UTF8.GetBytes(authorizationHeader[bearerPrefix.Length..]);
     return provided.Length == expected.Length
@@ -142,7 +144,7 @@ static Dictionary<string, string?> MapBookStackEnvVars()
         }
     }
 
-    AddScopeEntries(map, "BOOKSTACK_SCOPED_BOOKS",   "BookStack:ScopedBooks");
+    AddScopeEntries(map, "BOOKSTACK_SCOPED_BOOKS", "BookStack:ScopedBooks");
     AddScopeEntries(map, "BOOKSTACK_SCOPED_SHELVES", "BookStack:ScopedShelves");
 
     return map;
@@ -151,18 +153,24 @@ static Dictionary<string, string?> MapBookStackEnvVars()
 static void AddScopeEntries(Dictionary<string, string?> map, string envVar, string configPrefix)
 {
     var raw = Environment.GetEnvironmentVariable(envVar);
-    if (raw is null) return;
+    if (raw is null)
+    {
+        return;
+    }
 
     var index = 0;
     foreach (var entry in raw.Split(',').Select(e => e.Trim()).Where(e => e.Length > 0))
     {
-        if (!ScopeEntryRegex.IsMatch(entry))
+        if (!_scopeEntryRegex.IsMatch(entry))
+        {
             continue;
+        }
+
         map[$"{configPrefix}:{index++}"] = entry;
     }
 }
 
 public partial class Program
 {
-    private static readonly Regex ScopeEntryRegex = new(@"^[a-zA-Z0-9_-]+$", RegexOptions.Compiled);
+    private static readonly Regex _scopeEntryRegex = new(@"^[a-zA-Z0-9_-]+$", RegexOptions.Compiled);
 }
