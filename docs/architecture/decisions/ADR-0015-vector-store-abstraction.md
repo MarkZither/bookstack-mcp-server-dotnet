@@ -80,12 +80,12 @@ table schema; a minimal EF Core `SyncMetadataDbContext` handles the `sync_metada
 
 | Project | Package | Version |
 |---------|---------|---------|
-| `Data.Postgres` | `Npgsql` | `10.0.0` |
+| `Data.Postgres` | `Npgsql` | `10.0.2` |
 | `Data.Postgres` | `Npgsql.EntityFrameworkCore.PostgreSQL` | `10.0.0` |
 | `Data.Postgres` | `Pgvector` | `0.3.2` |
 | `Data.Postgres` | `Pgvector.EntityFrameworkCore` | `0.3.0` |
 | `Data.SqlServer` | `Microsoft.EntityFrameworkCore.SqlServer` | `10.*` (already referenced) |
-| `Data.Sqlite` | `Microsoft.SemanticKernel.Connectors.Sqlite` | `1.51.0-preview` |
+| `Data.Sqlite` | `Microsoft.SemanticKernel.Connectors.SqliteVec` | `1.74.0-preview` |
 | `Data.Sqlite` | `Microsoft.EntityFrameworkCore.Sqlite` | `10.*` (sync metadata table only) |
 
 ## Rationale
@@ -123,10 +123,11 @@ on earlier versions must use Postgres or SQLite.
 
 ### SQLite — Semantic Kernel SQLite connector
 
-`Microsoft.SemanticKernel.Connectors.Sqlite` provides native SQLite vector support via the SK
+`Microsoft.SemanticKernel.Connectors.SqliteVec` (the renamed successor to the deprecated
+`Microsoft.SemanticKernel.Connectors.Sqlite`) provides native SQLite vector support via the SK
 `IVectorStoreRecordCollection<K,V>` API. It handles schema creation, vector serialisation, and
 cosine similarity computation without requiring a separate native binary. The SK connector is
-currently preview (`1.51.0-preview`); if a breaking change occurs, the impact is confined to
+currently preview (`1.74.0-preview`); if a breaking change occurs, the impact is confined to
 `SqliteVectorStore` in `Data.Sqlite`. Sync metadata (content hash, last-sync timestamp) lives
 in a separate `sync_metadata` table managed by a minimal EF Core `SyncMetadataDbContext` with
 its own migration. The SQLite provider is intended for local/developer deployments; Postgres or

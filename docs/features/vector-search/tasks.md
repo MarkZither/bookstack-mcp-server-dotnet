@@ -57,7 +57,7 @@
 **Tracks**: Part of #5
 **Depends on**: #82
 
-- [ ] [P] Add `Microsoft.SemanticKernel.Connectors.Sqlite 1.51.0-preview` and `Microsoft.EntityFrameworkCore.Sqlite 10.*` to `BookStack.Mcp.Server.Data.Sqlite.csproj`
+- [ ] [P] Add `Microsoft.SemanticKernel.Connectors.SqliteVec 1.74.0-preview` and `Microsoft.EntityFrameworkCore.Sqlite 10.*` to `BookStack.Mcp.Server.Data.Sqlite.csproj`
 - [ ] [P] Create `src/BookStack.Mcp.Server.Data.Sqlite/VectorPageRecord.cs` (SK record type with `[VectorStoreRecordKey]` / `[VectorStoreRecordData]` / `[VectorStoreRecordVector]` attributes)
 - [ ] [P] Create `src/BookStack.Mcp.Server.Data.Sqlite/SyncMetadataDbContext.cs` (EF Core; `sync_metadata` table only)
 - [ ] [P] Create `src/BookStack.Mcp.Server.Data.Sqlite/SqliteVectorStore.cs` (wraps SK `SqliteVectorStore`; implements `IVectorStore`)
@@ -85,7 +85,7 @@
 **Tracks**: Part of #5
 **Depends on**: #81, #82, #83
 
-- [ ] Create `src/BookStack.Mcp.Server/services/VectorIndexSyncService.cs`
+- [x] Create `src/BookStack.Mcp.Server/services/VectorIndexSyncService.cs`
 
 ---
 
