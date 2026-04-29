@@ -27,6 +27,7 @@ if (transport == "stdio")
 
     builder.Configuration.AddInMemoryCollection(MapBookStackEnvVars());
     builder.Services.AddBookStackApiClient(builder.Configuration);
+    builder.Services.AddVectorSearch(builder.Configuration);
     builder.Services
         .AddMcpServer()
         .WithStdioServerTransport()
@@ -50,6 +51,7 @@ else
 
     builder.Configuration.AddInMemoryCollection(MapBookStackEnvVars());
     builder.Services.AddBookStackApiClient(builder.Configuration);
+    builder.Services.AddVectorSearch(builder.Configuration);
 
     var mcpBuilder = builder.Services
         .AddMcpServer()

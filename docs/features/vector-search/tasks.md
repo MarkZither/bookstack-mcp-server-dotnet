@@ -95,7 +95,7 @@
 **Tracks**: Part of #11
 **Depends on**: #81, #82
 
-- [ ] Create `src/BookStack.Mcp.Server/tools/semantic-search/SemanticSearchToolHandler.cs`
+- [x] Create `src/BookStack.Mcp.Server/tools/semantic-search/SemanticSearchToolHandler.cs`
 
 ---
 
@@ -105,10 +105,10 @@
 **Tracks**: Part of #5
 **Depends on**: #81, #82, #85, #86, #87, #88
 
-- [ ] Create `src/BookStack.Mcp.Server/api/VectorSearchServiceCollectionExtensions.cs`
-- [ ] Add `AddVectorSearch` call to `src/BookStack.Mcp.Server/Program.cs`
-- [ ] Add `VectorSearch` section to `src/BookStack.Mcp.Server/appsettings.json`
-- [ ] Add `Microsoft.Extensions.AI`, `Microsoft.Extensions.AI.Ollama`, `Azure.AI.OpenAI` to `BookStack.Mcp.Server.csproj`
+- [x] Create `src/BookStack.Mcp.Server/api/VectorSearchServiceCollectionExtensions.cs`
+- [x] Add `AddVectorSearch` call to `src/BookStack.Mcp.Server/Program.cs`
+- [x] Add `VectorSearch` section to `src/BookStack.Mcp.Server/appsettings.json`
+- [x] Add `Microsoft.Extensions.AI`, `Microsoft.Extensions.AI.Ollama`, `Microsoft.Extensions.AI.OpenAI`, `Azure.AI.OpenAI` to `BookStack.Mcp.Server.csproj`
 
 ---
 
