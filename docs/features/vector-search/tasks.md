@@ -118,9 +118,9 @@
 **Tracks**: Part of #5, Part of #11
 **Depends on**: #84, #87, #88
 
-- [ ] Create `tests/BookStack.Mcp.Server.Tests/VectorSearch/VectorIndexSyncServiceTests.cs`
-- [ ] Create `tests/BookStack.Mcp.Server.Tests/VectorSearch/SemanticSearchToolHandlerTests.cs`
-- [ ] Create `tests/BookStack.Mcp.Server.Tests/VectorSearch/VectorSearchIntegrationTests.cs`
+- [x] Create `tests/BookStack.Mcp.Server.Tests/VectorSearch/VectorIndexSyncServiceTests.cs`
+- [x] Create `tests/BookStack.Mcp.Server.Tests/VectorSearch/SemanticSearchToolHandlerTests.cs`
+- [x] Create `tests/BookStack.Mcp.Server.Tests/VectorSearch/VectorSearchIntegrationTests.cs`
 
 ---
 
