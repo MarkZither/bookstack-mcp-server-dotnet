@@ -12,6 +12,16 @@ public sealed partial class BookStackApiClient
         return SendAsync<ListResponse<Page>>(JsonRequest(HttpMethod.Get, url), cancellationToken);
     }
 
+    public Task<ListResponse<Page>> GetPagesUpdatedSinceAsync(
+        DateTimeOffset updatedAfter,
+        int count = 500,
+        CancellationToken cancellationToken = default)
+    {
+        var timestamp = Uri.EscapeDataString(updatedAfter.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss"));
+        var url = $"pages?count={count}&filter[updated_after]={timestamp}";
+        return SendAsync<ListResponse<Page>>(JsonRequest(HttpMethod.Get, url), cancellationToken);
+    }
+
     public Task<Page> CreatePageAsync(
         CreatePageRequest request,
         CancellationToken cancellationToken = default)
