@@ -216,8 +216,12 @@ the Visual Studio Marketplace when a `v*.*.*` tag is pushed.
    - Copy `BookStack.Mcp.Server.exe` to `visual-studio-extension/bin/`.
    - Verify SHA-256 hash of the binary against a signed manifest (supply-chain check per spec NFR).
    - Run `dotnet build visual-studio-extension/BookStack.Mcp.VsExtension.csproj -c Release` to produce the `.vsix`.
-   - Sign the VSIX with Authenticode (certificate stored in `VS_SIGNING_CERT` secret; signing strategy TBD — OQ-2
-     in spec; placeholder step added, certificate procurement deferred).
+   - Sign the bundled `BookStack.Mcp.Server.exe` PE binary using **Certum Open Source Code Signing in the
+     Cloud (SimplySign)**. The CI step installs SimplySign Desktop silently (via the `certum-sign-action`
+     composite action or Chocolatey `simplysign`), then calls `signtool.exe` with the cloud certificate.
+     Required repository secrets: `CERTUM_LOGIN`, `CERTUM_TOTP_SECRET`, `CERTUM_CERT_FINGERPRINT`.
+   - Sign the `.vsix` package with `vsixsigntool sign` using the same Certum certificate (certificate is
+     available in the Windows certificate store after the SimplySign Desktop installation step).
    - Upload the `.vsix` as a GitHub Actions artifact (`vsix-package`).
 
 2. **`publish-vs-marketplace` job** (new, `runs-on: windows-latest`, `needs: build-vs-extension`):
@@ -228,7 +232,7 @@ the Visual Studio Marketplace when a `v*.*.*` tag is pushed.
      authenticated with `VS_MARKETPLACE_PAT` secret.
 
 **Security**:
-- `VS_MARKETPLACE_PAT` and `VS_SIGNING_CERT` are repository secrets; never echoed to logs.
+- `VS_MARKETPLACE_PAT`, `CERTUM_LOGIN`, `CERTUM_TOTP_SECRET`, and `CERTUM_CERT_FINGERPRINT` are repository secrets; never echoed to logs.
 - All third-party Actions pinned to commit SHA (per ADR-0003).
 - Job-level `permissions: contents: write` scoped to the release job only.
 
@@ -267,8 +271,9 @@ sideloaded VSIX before moving the spec to `Approved`.
 - `mcp.json` contains `BOOKSTACK_TOKEN_SECRET` as a plain env var value, readable by the current Windows user.
   Equivalent to the VS Code settings.json approach (ADR-0011). Credential Manager migration is deferred to v2.
 - Win-x64 binary SHA-256 hash is verified by CI before VSIX assembly (supply-chain check).
-- VSIX must be Authenticode-signed before Marketplace submission; certificate procurement is tracked as OQ-2 in the
-  spec and is a prerequisite for the first Marketplace publish.
+- VSIX must be Authenticode-signed before Marketplace submission. Signing uses Certum Open Source Code
+  Signing in the Cloud (SimplySign) with `signtool.exe` for the PE binary and `vsixsigntool` for the VSIX
+  package. Required secrets: `CERTUM_LOGIN`, `CERTUM_TOTP_SECRET`, `CERTUM_CERT_FINGERPRINT`.
 - No outbound network calls from the extension itself — all network I/O is the server process's responsibility.
 - Input values from the Options page are never included in telemetry, even in debug builds.
 
@@ -278,7 +283,7 @@ sideloaded VSIX before moving the spec to `Approved`.
 
 | ID | Question | Blocking? |
 |----|----------|-----------|
-| OQ-2 | Authenticode certificate procurement and CI signing strategy | Yes — blocks first Marketplace publish |
+| OQ-2 | ~~Authenticode certificate procurement and CI signing strategy~~ **Resolved**: Certum Open Source Code Signing in the Cloud (SimplySign); `signtool.exe` + `vsixsigntool`; secrets `CERTUM_LOGIN`, `CERTUM_TOTP_SECRET`, `CERTUM_CERT_FINGERPRINT` | No longer blocking |
 | OQ-4 | Feasibility of masked `TokenSecret` field via custom `UITypeEditor` | No — deferred to v2 |
 
 ---

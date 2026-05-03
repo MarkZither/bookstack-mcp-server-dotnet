@@ -359,8 +359,9 @@ MUST follow [Keep a Changelog](https://keepachangelog.com/) format. Initial entr
   acceptable for v1.
 - The pre-built win-x64 binary is a CI artifact. The release workflow MUST verify the SHA-256 hash of the binary
   against a signed manifest before packing the VSIX, to prevent supply-chain substitution.
-- The VSIX MUST be Authenticode-signed before submission to the Visual Studio Marketplace. The signing certificate
-  and strategy are to be confirmed (see OQ-2).
+- The VSIX MUST be Authenticode-signed before submission to the Visual Studio Marketplace. Signing uses Certum
+  Open Source Code Signing in the Cloud (SimplySign): `signtool.exe` signs the bundled PE binary and `vsixsigntool`
+  signs the VSIX package. Required CI secrets: `CERTUM_LOGIN`, `CERTUM_TOTP_SECRET`, `CERTUM_CERT_FINGERPRINT`.
 - The extension MUST NOT make any outbound network calls — all network I/O is the server process's responsibility.
 - Input values from the Options page MUST NOT be logged or included in telemetry, even in debug builds.
 
@@ -370,9 +371,9 @@ MUST follow [Keep a Changelog](https://keepachangelog.com/) format. Initial entr
 
 - [x] **OQ-1**: RESOLVED — VS 2025 uses user-profile `mcp.json`. No `IVsMcpServerProvider` API needed. See ADR-0017.
 - [x] **OQ-3**: RESOLVED — minimum version is 18.0 (VS 2025). VS 2022 not targeted.
-- [ ] **OQ-2**: Does the Visual Studio Marketplace require the VSIX to be signed with a publicly trusted certificate,
-  or is a self-signed Authenticode certificate sufficient? What is the certificate procurement and storage strategy
-  for the CI pipeline?
+- [x] **OQ-2**: RESOLVED — Certum Open Source Code Signing in the Cloud (SimplySign). Publicly trusted certificate
+  (required by Marketplace). PE binary signed with `signtool.exe`; VSIX signed with `vsixsigntool`. CI secrets:
+  `CERTUM_LOGIN`, `CERTUM_TOTP_SECRET`, `CERTUM_CERT_FINGERPRINT`.
 - [ ] **OQ-4**: Should `TokenSecret` be rendered as a masked (password) field in the VS Options dialog? `DialogPage`
   does not natively support password rendering — confirm feasibility of a custom `UITypeEditor` or `TypeConverter`,
   or defer to v2.
