@@ -3,7 +3,7 @@
 **Feature**: FEAT-0015
 **Parent Issue**: [#15](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/15)
 **Decomposed**: 2026-04-22
-**Status**: In progress
+**Status**: Complete — merged via PR #62
 
 ---
 
@@ -20,30 +20,30 @@ Tasks are ordered by dependency. Each task is independently committable.
 
 ### Phase 1 — Project Skeleton
 
-- [ ] [Task 1] Bootstrap `vscode-extension/` project skeleton — `package.json`, `tsconfig.json`, `.vscodeignore`, `.eslintrc.json`, `.gitignore` entries → [#55](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/55)
+- [x] [Task 1] Bootstrap `vscode-extension/` project skeleton — `package.json`, `tsconfig.json`, `.vscodeignore`, `.eslintrc.json`, `.gitignore` entries → [#55](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/55)
 
 ### Phase 2 — Core Logic
 
-- [ ] [Task 2] Implement `extension.ts` — settings validation, platform binary resolution, token concatenation, error notifications → [#56](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/56)
+- [x] [Task 2] Implement `extension.ts` — settings validation, platform binary resolution, token concatenation, error notifications → [#56](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/56)
   - Depends on: #55
-- [ ] [Task 3] Add F5 debug configuration — `launch.json` + `tasks.json` → [#57](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/57)
+- [x] [Task 3] Add F5 debug configuration — `launch.json` + `tasks.json` → [#57](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/57)
   - Depends on: #55
 
 ### Phase 3 — Build Verification
 
-- [ ] [Task 5] Verify `dotnet publish` produces win-x64 and linux-x64 single-file binaries → [#58](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/58)
+- [x] [Task 5] Verify `dotnet publish` produces win-x64 and linux-x64 single-file binaries → [#58](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/58)
   - Depends on: #56 (binary path must match what extension.ts expects)
 
 ### Phase 4 — Marketplace Assets
 
-- [ ] [Task 6] Add marketplace assets — `icon.png`, `README.md`, `CHANGELOG.md` → [#59](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/59)
+- [x] [Task 6] Add marketplace assets — `icon.png`, `README.md`, `CHANGELOG.md` → [#59](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/59)
   - Depends on: #55
 
 ### Phase 5 — CI/CD
 
-- [ ] [Task 7] Create `release.yml` — parallel binary builds, VSIX package, GitHub Release, Marketplace publish → [#60](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/60)
+- [x] [Task 7] Create `release.yml` — parallel binary builds, VSIX package, GitHub Release, Marketplace publish → [#60](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/60)
   - Depends on: #58, #59
-- [ ] [Task 8] Extend `ci.yml` with extension lint job → [#61](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/61)
+- [x] [Task 8] Extend `ci.yml` with extension lint job → [#61](https://github.com/MarkZither/bookstack-mcp-server-dotnet/issues/61)
   - Depends on: #55
 
 ---
