@@ -15,3 +15,4 @@ docs/
 .env
 .env.*
 !.env.example
+# docker-publish/ is intentionally NOT excluded — it is the build output copied into the image

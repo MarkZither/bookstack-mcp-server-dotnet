@@ -101,6 +101,17 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+
+      - name: Publish server (framework-dependent)
+        run: |
+          dotnet publish src/BookStack.Mcp.Server/BookStack.Mcp.Server.csproj \
+            -c Release \
+            -o docker-publish \
+            --no-self-contained
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:

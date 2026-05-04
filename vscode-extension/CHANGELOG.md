@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-05-04
+
+### Fixed
+
+- CI: run `dotnet publish` on the runner instead of inside the Docker build stage to avoid OOM (exit code 155).
+- CI: bump VS Code extension version to avoid re-publishing an already-published version.
+
 ## [0.3.1] - 2026-05-04
 
 ### Changed

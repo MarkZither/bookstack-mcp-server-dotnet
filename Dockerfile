@@ -1,18 +1,12 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
-
-COPY BookStack.Mcp.Server.sln global.json ./
-COPY src/ src/
-
-RUN dotnet publish src/BookStack.Mcp.Server/BookStack.Mcp.Server.csproj \
-    -c Release \
-    -o /app/publish \
-    --no-self-contained
-
+# The dotnet publish is run on the CI runner (not inside Docker) to avoid OOM.
+# CI places the publish output in docker-publish/ before calling docker build.
+# For local builds, run first:
+#   dotnet publish src/BookStack.Mcp.Server/BookStack.Mcp.Server.csproj \
+#     -c Release -o docker-publish --no-self-contained
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-COPY --from=build /app/publish .
+COPY docker-publish/ .
 
 ENV BOOKSTACK_MCP_TRANSPORT=http
 ENV BOOKSTACK_MCP_HTTP_PORT=3000
