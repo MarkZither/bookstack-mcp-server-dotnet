@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-04
+
+### Added
+
+- **Semantic search** — natural language search across BookStack pages using vector embeddings
+  (server-side feature; requires vector search enabled and configured via environment variables or `appsettings.json`).
+- Document full MCP tool set in README: Users, Roles, Attachments, Images, Audit Logs, Recycle Bin, Permissions,
+  Server Info — these tools have been available since v0.1.0 but were not listed in previous releases.
+
+### Changed
+
+- README: add `bookstack.scopedBooks` and `bookstack.scopedShelves` configuration reference (available since v0.2.0).
+- README: add Docker and Streamable HTTP transport sections.
+
+## [0.2.0] - 2026-04-30
+
+### Added
+
+- `bookstack.scopedBooks` setting — restrict the MCP server to specific books by ID or slug.
+- `bookstack.scopedShelves` setting — restrict the MCP server to specific shelves by ID or slug.
+- Streamable HTTP transport support — the bundled server binary now supports `http` and `both` transports
+  (configured via `BOOKSTACK_MCP_TRANSPORT` environment variable; not used by the extension itself which
+  always uses stdio).
+
 ## [0.1.1] - 2026-04-23
 
 ### Changed

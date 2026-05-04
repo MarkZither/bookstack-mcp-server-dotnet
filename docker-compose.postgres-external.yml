@@ -1,0 +1,51 @@
+# BookStack MCP Server — external PostgreSQL + Ollama
+#
+# Use this when you already have a PostgreSQL instance (with pgvector extension)
+# and want to connect to it with a connection string.
+#
+# Prerequisites on your existing PostgreSQL instance:
+#   CREATE EXTENSION IF NOT EXISTS vector;
+#
+# Usage:
+#   docker compose -f docker-compose.postgres-external.yml up -d
+#
+# On first run, pull the embedding model:
+#   docker compose -f docker-compose.postgres-external.yml exec ollama \
+#     ollama pull nomic-embed-text
+#
+# MCP endpoint:  http://localhost:3000/mcp  (Bearer token required)
+# Health check:  http://localhost:3000/health
+
+services:
+  bookstack-mcp:
+    image: ghcr.io/markzither/bookstack-mcp-server:latest
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    environment:
+      BOOKSTACK_BASE_URL: ${BOOKSTACK_BASE_URL}
+      BOOKSTACK_TOKEN_SECRET: ${BOOKSTACK_TOKEN_SECRET}
+      BOOKSTACK_MCP_TRANSPORT: http
+      BOOKSTACK_MCP_HTTP_PORT: "3000"
+      BOOKSTACK_MCP_HTTP_AUTH_TOKEN: ${BOOKSTACK_MCP_HTTP_AUTH_TOKEN}
+      # Vector search — set ConnectionStrings__VectorDb to your existing PostgreSQL connection string
+      VectorSearch__Enabled: "true"
+      VectorSearch__Database: Postgres
+      ConnectionStrings__VectorDb: ${VECTOR_DB_CONNECTION_STRING}
+      VectorSearch__EmbeddingProvider: Ollama
+      VectorSearch__Ollama__BaseUrl: http://ollama:11434
+      VectorSearch__Ollama__Model: nomic-embed-text
+      VectorSearch__Sync__IntervalHours: "24"
+      VectorSearch__Sync__BatchSize: "50"
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:

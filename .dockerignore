@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/dist
+vscode-extension/bin
+vscode-extension/*.vsix
+publish-local/
+tests/
+docs/
+*.md
+.env
+.env.*
+!.env.example

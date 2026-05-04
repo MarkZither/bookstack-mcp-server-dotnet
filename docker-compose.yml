@@ -1,0 +1,24 @@
+# BookStack MCP Server — HTTP transport, no vector search
+#
+# Usage:
+#   cp .env.example .env    # edit with your BookStack credentials
+#   docker compose up -d
+#
+# MCP endpoint:  http://localhost:3000/mcp  (Bearer token required)
+# Health check:  http://localhost:3000/health
+
+services:
+  bookstack-mcp:
+    image: ghcr.io/markzither/bookstack-mcp-server:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      BOOKSTACK_BASE_URL: ${BOOKSTACK_BASE_URL}
+      BOOKSTACK_TOKEN_SECRET: ${BOOKSTACK_TOKEN_SECRET}
+      BOOKSTACK_MCP_TRANSPORT: http
+      BOOKSTACK_MCP_HTTP_PORT: "3000"
+      BOOKSTACK_MCP_HTTP_AUTH_TOKEN: ${BOOKSTACK_MCP_HTTP_AUTH_TOKEN}
+      # Optional — restrict to specific books or shelves (comma-separated IDs or slugs)
+      # BOOKSTACK_SCOPED_BOOKS: my-book,another-book
+      # BOOKSTACK_SCOPED_SHELVES: my-shelf
