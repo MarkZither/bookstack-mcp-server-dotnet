@@ -108,6 +108,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Extract version from tag
         id: version
         run: echo "tag=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
@@ -123,5 +129,7 @@ jobs:
           tags: |
             ghcr.io/markzither/bookstack-mcp-server:latest
             ghcr.io/markzither/bookstack-mcp-server:${{ steps.version.outputs.tag }}
+            markzither/bookstack-mcp-server:latest
+            markzither/bookstack-mcp-server:${{ steps.version.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

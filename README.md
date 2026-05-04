@@ -3,6 +3,7 @@
 [![CI](https://github.com/MarkZither/bookstack-mcp-server-dotnet/actions/workflows/ci.yml/badge.svg)](https://github.com/MarkZither/bookstack-mcp-server-dotnet/actions/workflows/ci.yml)
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/MarkZither.bookstack-mcp-server.svg?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=MarkZither.bookstack-mcp-server)
 [![Docker Pulls](https://img.shields.io/docker/pulls/markzither/bookstack-mcp-server.svg)](https://hub.docker.com/r/markzither/bookstack-mcp-server)
+[![Docker Image Version](https://img.shields.io/docker/v/markzither/bookstack-mcp-server/latest?label=docker)](https://hub.docker.com/r/markzither/bookstack-mcp-server)
 
 A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server providing full access to BookStack's knowledge management API in .NET 10. Gives AI assistants (GitHub Copilot, Claude, and others) direct access to your BookStack instance.
 

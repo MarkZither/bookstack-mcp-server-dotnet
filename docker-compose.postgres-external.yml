@@ -18,7 +18,7 @@
 
 services:
   bookstack-mcp:
-    image: ghcr.io/markzither/bookstack-mcp-server:latest
+    image: markzither/bookstack-mcp-server:latest
     restart: unless-stopped
     depends_on:
       ollama:
