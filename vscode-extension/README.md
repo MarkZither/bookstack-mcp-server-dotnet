@@ -3,7 +3,7 @@
 > **AI-powered access to your BookStack knowledge base** — for GitHub Copilot, Claude, and any MCP-compatible AI assistant.
 
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/MarkZither.bookstack-mcp-server.svg?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=MarkZither.bookstack-mcp-server)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/MarkZither.bookstack-mcp-server.svg)](https://marketplace.visualstudio.com/items?itemName=MarkZither.bookstack-mcp-server)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/MarkZither.bookstack-mcp-server.svg)](https://marketplace.visualstudio.com/items?itemName=MarkZither.bookstack-mcp-server)
 
 ## What It Does
 
