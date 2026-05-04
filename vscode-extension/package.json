@@ -2,7 +2,7 @@
   "name": "bookstack-mcp-server",
   "displayName": "BookStack MCP Server",
   "description": "MCP server for BookStack — gives AI assistants (GitHub Copilot, Claude) access to your BookStack knowledge base.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "MarkZither",
   "engines": {
     "vscode": "^1.99.0"
