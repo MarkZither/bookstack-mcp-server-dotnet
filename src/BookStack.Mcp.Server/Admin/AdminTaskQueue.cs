@@ -5,7 +5,7 @@ namespace BookStack.Mcp.Server.Admin;
 internal sealed class AdminTaskQueue : IAdminTaskQueue
 {
     private readonly Channel<AdminTask> _channel =
-        Channel.CreateUnbounded<AdminTask>(new UnboundedChannelOptions { SingleReader = true });
+        Channel.CreateUnbounded<AdminTask>();
 
     public int PendingCount => _channel.Reader.Count;
 

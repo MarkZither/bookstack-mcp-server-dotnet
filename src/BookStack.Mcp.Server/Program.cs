@@ -128,11 +128,15 @@ else
 
     var app = builder.Build();
 
-    if (adminPort > 0)
+    // Re-read adminPort from app.Configuration (post-Build) so that test factories
+    // can override it via ConfigureAppConfiguration without needing env var changes.
+    var effectiveAdminPort = app.Configuration.GetValue<int?>("BOOKSTACK_ADMIN_PORT") ?? adminPort;
+
+    if (effectiveAdminPort > 0)
     {
         app.Logger.LogInformation(
-            "Admin sidecar listening on http://127.0.0.1:{AdminPort}", adminPort);
-        var admin = app.MapGroup("/admin").RequireHost($"127.0.0.1:{adminPort}");
+            "Admin sidecar listening on http://127.0.0.1:{AdminPort}", effectiveAdminPort);
+        var admin = app.MapGroup("/admin").RequireHost($"127.0.0.1:{effectiveAdminPort}");
         admin.MapGet("/status", AdminHandlers.GetStatusAsync);
         admin.MapPost("/sync", AdminHandlers.PostSyncAsync);
         admin.MapPost("/index", AdminHandlers.PostIndexAsync);
