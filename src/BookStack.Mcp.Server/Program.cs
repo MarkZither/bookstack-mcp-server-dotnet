@@ -1,7 +1,9 @@
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using BookStack.Mcp.Server.Admin;
 using BookStack.Mcp.Server.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 
 var transport = Environment.GetEnvironmentVariable("BOOKSTACK_MCP_TRANSPORT") ?? "stdio";
+var adminPort = int.TryParse(
+    Environment.GetEnvironmentVariable("BOOKSTACK_ADMIN_PORT"), out var ap) ? ap : 5174;
 
 if (transport is not ("stdio" or "http" or "both"))
 {
@@ -18,8 +22,9 @@ if (transport is not ("stdio" or "http" or "both"))
     return 1;
 }
 
-if (transport == "stdio")
+if (transport == "stdio" && adminPort == 0)
 {
+    // Headless / CI path — no admin sidecar, no HTTP listener needed.
     var builder = Host.CreateApplicationBuilder(args);
 
     builder.Logging.AddConsole(options =>
@@ -34,16 +39,19 @@ if (transport == "stdio")
         .WithToolsFromAssembly(Assembly.GetExecutingAssembly())
         .WithResourcesFromAssembly(Assembly.GetExecutingAssembly());
 
-    await builder.Build().RunAsync().ConfigureAwait(false);
+    var host = builder.Build();
+    host.Services.GetRequiredService<ILogger<Program>>()
+        .LogInformation("Admin sidecar is disabled (BOOKSTACK_ADMIN_PORT=0).");
+    await host.RunAsync().ConfigureAwait(false);
 }
 else
 {
-    var port = int.TryParse(
+    var mcpPort = int.TryParse(
         Environment.GetEnvironmentVariable("BOOKSTACK_MCP_HTTP_PORT"), out var p) ? p : 3000;
 
     var builder = WebApplication.CreateBuilder(args);
 
-    if (transport == "both")
+    if (transport is "stdio" or "both")
     {
         builder.Logging.AddConsole(options =>
             options.LogToStandardErrorThreshold = LogLevel.Trace);
@@ -53,61 +61,125 @@ else
     builder.Services.AddBookStackApiClient(builder.Configuration);
     builder.Services.AddVectorSearch(builder.Configuration);
 
+    if (adminPort > 0)
+    {
+        builder.Services.AddSingleton<IAdminTaskQueue, AdminTaskQueue>();
+
+        var vectorEnabled = builder.Configuration.GetValue<bool>("VectorSearch:Enabled");
+        if (vectorEnabled)
+        {
+            builder.Services.AddHostedService<AdminIndexWorkerService>();
+        }
+    }
+
     var mcpBuilder = builder.Services
         .AddMcpServer()
-        .WithHttpTransport()
         .WithToolsFromAssembly(Assembly.GetExecutingAssembly())
         .WithResourcesFromAssembly(Assembly.GetExecutingAssembly());
 
-    if (transport == "both")
+    if (transport == "stdio")
     {
+        // stdio + admin enabled: stdio MCP transport alongside the admin Kestrel listener.
         mcpBuilder.WithStdioServerTransport();
     }
+    else
+    {
+        mcpBuilder.WithHttpTransport();
+        if (transport == "both")
+        {
+            mcpBuilder.WithStdioServerTransport();
+        }
+    }
+
+    // Explicit Kestrel listeners so the admin port can be added alongside the MCP port.
+    // Once Listen() is called explicitly, ASPNETCORE_URLS is no longer honoured by Kestrel,
+    // so we read and apply it manually.
+    builder.WebHost.ConfigureKestrel(opts =>
+    {
+        if (adminPort > 0)
+        {
+            opts.Listen(IPAddress.Loopback, adminPort);
+        }
+
+        if (transport != "stdio")
+        {
+            var aspnetUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+            if (string.IsNullOrEmpty(aspnetUrls))
+            {
+                opts.ListenAnyIP(mcpPort);
+            }
+            else
+            {
+                foreach (var urlString in aspnetUrls.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (!Uri.TryCreate(urlString.Trim(), UriKind.Absolute, out var listenUri))
+                    {
+                        continue;
+                    }
+
+                    var address = listenUri.Host is "*" or "+" or "0.0.0.0"
+                        ? IPAddress.Any
+                        : IPAddress.Parse(listenUri.Host);
+                    opts.Listen(address, listenUri.Port);
+                }
+            }
+        }
+    });
 
     var app = builder.Build();
 
-    var authToken = app.Configuration["BOOKSTACK_MCP_HTTP_AUTH_TOKEN"]
-                    ?? Environment.GetEnvironmentVariable("BOOKSTACK_MCP_HTTP_AUTH_TOKEN");
-
-    if (string.IsNullOrEmpty(authToken))
+    if (adminPort > 0)
     {
-        app.Logger.LogWarning(
-            "HTTP authentication is disabled. Set BOOKSTACK_MCP_HTTP_AUTH_TOKEN to enable.");
-
-        app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-        app.MapMcp();
+        app.Logger.LogInformation(
+            "Admin sidecar listening on http://127.0.0.1:{AdminPort}", adminPort);
+        var admin = app.MapGroup("/admin").RequireHost($"127.0.0.1:{adminPort}");
+        admin.MapGet("/status", AdminHandlers.GetStatusAsync);
+        admin.MapPost("/sync", AdminHandlers.PostSyncAsync);
+        admin.MapPost("/index", AdminHandlers.PostIndexAsync);
     }
     else
     {
-        var authTokenBytes = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(authToken));
+        app.Logger.LogInformation("Admin sidecar is disabled (BOOKSTACK_ADMIN_PORT=0).");
+    }
 
-        app.Use(async (ctx, next) =>
+    if (transport != "stdio")
+    {
+        var authToken = app.Configuration["BOOKSTACK_MCP_HTTP_AUTH_TOKEN"]
+                        ?? Environment.GetEnvironmentVariable("BOOKSTACK_MCP_HTTP_AUTH_TOKEN");
+
+        if (string.IsNullOrEmpty(authToken))
         {
-            if (ctx.Request.Path.StartsWithSegments("/mcp"))
+            app.Logger.LogWarning(
+                "HTTP authentication is disabled. Set BOOKSTACK_MCP_HTTP_AUTH_TOKEN to enable.");
+
+            app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+            app.MapMcp();
+        }
+        else
+        {
+            var authTokenBytes = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(authToken));
+
+            app.Use(async (ctx, next) =>
             {
-                var header = ctx.Request.Headers.Authorization.ToString();
-                if (!IsAuthorized(header, authTokenBytes))
+                if (ctx.Request.Path.StartsWithSegments("/mcp"))
                 {
-                    ctx.Response.StatusCode = 401;
-                    return;
+                    var header = ctx.Request.Headers.Authorization.ToString();
+                    if (!IsAuthorized(header, authTokenBytes))
+                    {
+                        ctx.Response.StatusCode = 401;
+                        return;
+                    }
                 }
-            }
 
-            await next(ctx).ConfigureAwait(false);
-        });
+                await next(ctx).ConfigureAwait(false);
+            });
 
-        app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-        app.MapMcp();
+            app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+            app.MapMcp();
+        }
     }
 
-    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
-    {
-        await app.RunAsync($"http://0.0.0.0:{port}").ConfigureAwait(false);
-    }
-    else
-    {
-        await app.RunAsync().ConfigureAwait(false);
-    }
+    await app.RunAsync().ConfigureAwait(false);
 }
 
 return 0;

@@ -111,4 +111,21 @@ public sealed class SqliteVectorStore : IVectorStore
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+    {
+        await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2007
+        await using var db = await _metaFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning restore CA2007
+        return await db.Database
+            .ExecuteSqlRawAsync("SELECT 1", cancellationToken)
+            .ConfigureAwait(false) switch
+        {
+            _ => await db.Database
+                .SqlQueryRaw<int>($"SELECT COUNT(*) AS \"Value\" FROM {_collectionName}")
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false),
+        };
+    }
 }

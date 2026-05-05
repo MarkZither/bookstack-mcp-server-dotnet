@@ -130,6 +130,14 @@ public sealed class PgVectorStore : IVectorStore
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+    {
+#pragma warning disable CA2007
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning restore CA2007
+        return await db.PageVectors.CountAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     private static VectorPageRecord MapToRecord(VectorPageEntry entry, ReadOnlyMemory<float> vector) =>
         new()
         {

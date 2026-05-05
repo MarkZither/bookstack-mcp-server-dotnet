@@ -17,4 +17,6 @@ public interface IVectorStore
     Task<DateTimeOffset?> GetLastSyncAtAsync(CancellationToken cancellationToken = default);
 
     Task SetLastSyncAtAsync(DateTimeOffset timestamp, CancellationToken cancellationToken = default);
+
+    Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
 }

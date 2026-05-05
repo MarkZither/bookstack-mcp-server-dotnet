@@ -38,7 +38,8 @@ public static class VectorSearchServiceCollectionExtensions
         RegisterEmbeddingGenerator(services, options);
         RegisterVectorStore(services, options, configuration);
 
-        services.AddHostedService<VectorIndexSyncService>();
+        services.AddSingleton<VectorIndexSyncService>();
+        services.AddHostedService(sp => sp.GetRequiredService<VectorIndexSyncService>());
 
         return services;
     }
@@ -109,6 +110,9 @@ public static class VectorSearchServiceCollectionExtensions
             => throw new NotSupportedException("Vector search is disabled.");
 
         public Task SetLastSyncAtAsync(DateTimeOffset timestamp, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException("Vector search is disabled.");
+
+        public Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
             => throw new NotSupportedException("Vector search is disabled.");
     }
 

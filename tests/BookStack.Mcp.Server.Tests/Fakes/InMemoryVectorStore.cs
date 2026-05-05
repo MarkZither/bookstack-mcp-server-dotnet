@@ -64,6 +64,9 @@ public sealed class InMemoryVectorStore : IVectorStore
         return Task.CompletedTask;
     }
 
+    public Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(_records.Count);
+
     private static float CosineSimilarity(float[] a, float[] b)
     {
         if (a.Length != b.Length || a.Length == 0)

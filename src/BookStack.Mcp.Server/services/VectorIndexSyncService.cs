@@ -31,7 +31,7 @@ internal sealed partial class VectorIndexSyncService(
         {
             try
             {
-                await RunSyncCycleAsync(stoppingToken).ConfigureAwait(false);
+                await RunFullSyncAsync(stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -57,7 +57,7 @@ internal sealed partial class VectorIndexSyncService(
         logger.LogInformation("VectorIndexSyncService stopped.");
     }
 
-    private async Task RunSyncCycleAsync(CancellationToken ct)
+    internal async Task RunFullSyncAsync(CancellationToken ct)
     {
         var lastSyncAt = await vectorStore.GetLastSyncAtAsync(ct).ConfigureAwait(false)
             ?? DateTimeOffset.MinValue;
@@ -111,6 +111,51 @@ internal sealed partial class VectorIndexSyncService(
             "Vector index sync complete. Upserted: {Synced}, Skipped: {Skipped}.",
             synced,
             skipped);
+    }
+
+    internal async Task SyncPageByUrlAsync(string url, CancellationToken ct)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            logger.LogWarning("SyncPageByUrlAsync: invalid URL '{Url}'.", url);
+            return;
+        }
+
+        var slug = uri.Segments.LastOrDefault(s => s != "/")?.TrimEnd('/');
+        if (string.IsNullOrEmpty(slug))
+        {
+            logger.LogWarning("SyncPageByUrlAsync: could not extract slug from URL '{Url}'.", url);
+            return;
+        }
+
+        var searchResult = await apiClient
+            .SearchAsync(
+                new Api.Models.SearchRequest { Query = $"{slug} type:page", Count = 10 },
+                ct)
+            .ConfigureAwait(false);
+
+        var match = searchResult.Data.FirstOrDefault(
+            r => r.Type == "page" &&
+                 string.Equals(r.Url.TrimEnd('/'), url.TrimEnd('/'), StringComparison.OrdinalIgnoreCase));
+
+        if (match is null)
+        {
+            logger.LogWarning(
+                "SyncPageByUrlAsync: no page found matching URL '{Url}'.", url);
+            return;
+        }
+
+        var page = new Api.Models.Page
+        {
+            Id = match.Id,
+            Name = match.Name,
+            Slug = match.Slug,
+            BookId = match.Book?.Id ?? 0,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+
+        await SyncPageAsync(page, new Dictionary<int, string>(), ct).ConfigureAwait(false);
+        logger.LogInformation("SyncPageByUrlAsync: indexed page {PageId} ({Url}).", match.Id, url);
     }
 
     private async Task<bool> SyncPageAsync(
