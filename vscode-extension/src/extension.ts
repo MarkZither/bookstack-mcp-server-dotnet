@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { AdminSidecarClient, resolveAdminPort } from './adminSidecarClient';
+import { StatusBarManager } from './statusBarManager';
+import { AdminPanelProvider } from './adminPanelProvider';
 
 export function activate(context: vscode.ExtensionContext): void {
     const outputChannel = vscode.window.createOutputChannel('BookStack MCP Server');
@@ -86,6 +89,20 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(disposable);
     outputChannel.appendLine('  registerMcpServerDefinitionProvider returned — provider registered.');
     outputChannel.appendLine(`BookStack MCP Server: activation complete (binary=${binaryPath}).`);
+
+    // Admin sidecar integration — status bar, polling, and admin panel.
+    const adminClient = new AdminSidecarClient(resolveAdminPort);
+    const statusBar = new StatusBarManager(adminClient, 'bookstack.openAdminPanel');
+    const adminPanel = new AdminPanelProvider(adminClient, statusBar, context);
+    statusBar.onStateChange = (state, status) => adminPanel.handleStateChange(state, status);
+
+    context.subscriptions.push(statusBar);
+    context.subscriptions.push(adminPanel);
+    context.subscriptions.push(
+        vscode.commands.registerCommand('bookstack.openAdminPanel', () => {
+            adminPanel.openOrFocus();
+        })
+    );
 }
 
 export function deactivate(): void {
