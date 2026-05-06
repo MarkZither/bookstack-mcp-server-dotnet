@@ -71,6 +71,38 @@
           "minimum": 1,
           "maximum": 65535,
           "markdownDescription": "Port of the local admin sidecar. Must match `BOOKSTACK_ADMIN_PORT` set on the MCP server process. Admin features are unavailable when the sidecar is not running."
+        },
+        "bookstack.vectorSearch.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable semantic (vector) search. Requires an embedding provider and a vector database to be configured."
+        },
+        "bookstack.vectorSearch.embeddingProvider": {
+          "type": "string",
+          "default": "Ollama",
+          "enum": ["Ollama", "AzureOpenAI"],
+          "markdownDescription": "Embedding model provider. `Ollama` runs locally; `AzureOpenAI` uses Azure OpenAI Service."
+        },
+        "bookstack.vectorSearch.database": {
+          "type": "string",
+          "default": "Sqlite",
+          "enum": ["Sqlite", "Postgres"],
+          "markdownDescription": "Vector store backend. `Sqlite` requires no extra infrastructure; `Postgres` requires pgvector."
+        },
+        "bookstack.vectorSearch.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "markdownDescription": "Base URL of the Ollama server. Only used when `bookstack.vectorSearch.embeddingProvider` is `Ollama`."
+        },
+        "bookstack.vectorSearch.ollamaModel": {
+          "type": "string",
+          "default": "nomic-embed-text",
+          "markdownDescription": "Ollama model name for embeddings. Only used when `bookstack.vectorSearch.embeddingProvider` is `Ollama`."
+        },
+        "bookstack.vectorSearch.connectionString": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Database connection string for the vector store. Leave blank to use the default SQLite file (`bookstack-vectors.db`). Required when `bookstack.vectorSearch.database` is `Postgres`."
         }
       }
     },

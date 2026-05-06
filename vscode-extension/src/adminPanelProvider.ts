@@ -10,6 +10,7 @@ export class AdminPanelProvider implements vscode.Disposable {
         private readonly client: AdminSidecarClient,
         private readonly statusBarManager: StatusBarManager,
         private readonly context: vscode.ExtensionContext,
+        private readonly adminPort: number,
     ) {}
 
     /** Open the panel or focus it if already open. */
@@ -72,6 +73,12 @@ export class AdminPanelProvider implements vscode.Disposable {
             } else {
                 void this.panel?.webview.postMessage({ command: 'syncError', message: result.message });
             }
+        } else if (msg.command === 'openSettings') {
+            void vscode.commands.executeCommand('workbench.action.openSettings', 'bookstack.adminPort');
+        } else if (msg.command === 'openSettings') {
+            void vscode.commands.executeCommand('workbench.action.openSettings', 'bookstack.adminPort');
+        } else if (msg.command === 'openSettings') {
+            void vscode.commands.executeCommand('workbench.action.openSettings', 'bookstack.adminPort');
         } else if (msg.command === 'indexPage') {
             const url = msg.url?.trim() ?? '';
             if (!url) {
@@ -90,7 +97,7 @@ export class AdminPanelProvider implements vscode.Disposable {
     private renderHtml(status: AdminStatus | null, unreachable: boolean): void {
         if (!this.panel) { return; }
         const nonce = crypto.randomUUID().replace(/-/g, '');
-        this.panel.webview.html = buildWebviewHtml(nonce, status, unreachable);
+        this.panel.webview.html = buildWebviewHtml(nonce, status, unreachable, this.adminPort);
     }
 
     dispose(): void {
@@ -99,12 +106,12 @@ export class AdminPanelProvider implements vscode.Disposable {
     }
 }
 
-function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable: boolean): string {
+function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable: boolean, adminPort: number): string {
     const lastSync = status?.lastSyncTime
         ? new Date(status.lastSyncTime).toUTCString()
         : '\u2014';
     const statsHtml = unreachable || !status
-        ? `<p class="warning">&#9888; Admin sidecar unreachable. Check that the MCP server is running and <code>bookstack.adminPort</code> is correct.</p>`
+        ? `<p class="warning">&#9888; Admin sidecar unreachable on port <a href="#" id="openSettingsLink"><code>${adminPort}</code></a>. The MCP server may not be running, or port ${adminPort} is in use by another process.</p>`
         : `<table>
              <tr><th>Total Pages</th><td id="totalPages">${status.totalPages}</td></tr>
              <tr><th>Last Sync</th><td id="lastSync">${lastSync}</td></tr>
@@ -129,6 +136,8 @@ function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable
     input[type=text] { width: 60%; padding: 4px 8px; }
     #status { margin-top: 12px; font-style: italic; }
     .warning { color: var(--vscode-errorForeground); }
+    .warning a { color: var(--vscode-textLink-foreground); }
+    .warning a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -148,6 +157,10 @@ function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable
   <p id="status"></p>
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
+    document.getElementById('openSettingsLink')?.addEventListener('click', e => {
+      e.preventDefault();
+      vscode.postMessage({ command: 'openSettings' });
+    });
     document.getElementById('syncBtn').addEventListener('click', () => {
       vscode.postMessage({ command: 'syncNow' });
     });
@@ -175,7 +188,7 @@ function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable
       } else if (msg.command === 'indexError') {
         statusEl.textContent = msg.message;
       } else if (msg.command === 'sidecarUnreachable') {
-        statusEl.textContent = 'Admin sidecar unreachable.';
+        statusEl.textContent = '';
       }
     });
   </script>

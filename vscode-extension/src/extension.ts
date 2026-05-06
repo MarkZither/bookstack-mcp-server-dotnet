@@ -41,7 +41,21 @@ export function activate(context: vscode.ExtensionContext): void {
 
     let disposable: vscode.Disposable;
     try {
+        const onDidChange = new vscode.EventEmitter<void>();
+        context.subscriptions.push(onDidChange);
+
+        // Re-trigger provideMcpServerDefinitions (which restarts the server process)
+        // whenever any bookstack.* setting changes.
+        context.subscriptions.push(
+            vscode.workspace.onDidChangeConfiguration(e => {
+                if (e.affectsConfiguration('bookstack')) {
+                    onDidChange.fire();
+                }
+            })
+        );
+
         disposable = vscode.lm.registerMcpServerDefinitionProvider('bookstack', {
+            onDidChangeMcpServerDefinitions: onDidChange.event,
             provideMcpServerDefinitions() {
                 const config = vscode.workspace.getConfiguration('bookstack');
                 const url = config.get<string>('url', '').trim();
@@ -49,6 +63,14 @@ export function activate(context: vscode.ExtensionContext): void {
                 const tokenSecret = config.get<string>('tokenSecret', '').trim();
                 const scopedBooks = config.get<string[]>('scopedBooks', []);
                 const scopedShelves = config.get<string[]>('scopedShelves', []);
+                const adminPort = resolveAdminPort();
+
+                const vectorEnabled = config.get<boolean>('vectorSearch.enabled', false);
+                const vectorProvider = config.get<string>('vectorSearch.embeddingProvider', 'Ollama');
+                const vectorDatabase = config.get<string>('vectorSearch.database', 'Sqlite');
+                const ollamaUrl = config.get<string>('vectorSearch.ollamaUrl', '').trim();
+                const ollamaModel = config.get<string>('vectorSearch.ollamaModel', '').trim();
+                const vectorConn = config.get<string>('vectorSearch.connectionString', '').trim();
 
                 if (!url || !tokenId || !tokenSecret) {
                     vscode.window.showWarningMessage(
@@ -63,7 +85,7 @@ export function activate(context: vscode.ExtensionContext): void {
                     return [];
                 }
 
-                outputChannel.appendLine(`BookStack MCP Server: providing server definition (url=${url}).`);
+                outputChannel.appendLine(`BookStack MCP Server: providing server definition (url=${url}, adminPort=${adminPort}, vectorSearch=${vectorEnabled}).`);
 
                 return [
                     new vscode.McpStdioServerDefinition(
@@ -73,6 +95,13 @@ export function activate(context: vscode.ExtensionContext): void {
                         {
                             BOOKSTACK_BASE_URL: url,
                             BOOKSTACK_TOKEN_SECRET: `${tokenId}:${tokenSecret}`,
+                            BOOKSTACK_ADMIN_PORT: String(adminPort),
+                            BOOKSTACK_VECTOR_ENABLED: String(vectorEnabled),
+                            BOOKSTACK_VECTOR_PROVIDER: vectorProvider,
+                            BOOKSTACK_VECTOR_DATABASE: vectorDatabase,
+                            ...(ollamaUrl && { BOOKSTACK_VECTOR_OLLAMA_URL: ollamaUrl }),
+                            ...(ollamaModel && { BOOKSTACK_VECTOR_OLLAMA_MODEL: ollamaModel }),
+                            ...(vectorConn && { BOOKSTACK_VECTOR_CONNECTION: vectorConn }),
                             ...(scopedBooks.length > 0 && { BOOKSTACK_SCOPED_BOOKS: scopedBooks.join(',') }),
                             ...(scopedShelves.length > 0 && { BOOKSTACK_SCOPED_SHELVES: scopedShelves.join(',') }),
                         }
@@ -91,9 +120,10 @@ export function activate(context: vscode.ExtensionContext): void {
     outputChannel.appendLine(`BookStack MCP Server: activation complete (binary=${binaryPath}).`);
 
     // Admin sidecar integration — status bar, polling, and admin panel.
-    const adminClient = new AdminSidecarClient(resolveAdminPort);
+    const adminPort = resolveAdminPort();
+    const adminClient = new AdminSidecarClient(() => adminPort);
     const statusBar = new StatusBarManager(adminClient, 'bookstack.openAdminPanel');
-    const adminPanel = new AdminPanelProvider(adminClient, statusBar, context);
+    const adminPanel = new AdminPanelProvider(adminClient, statusBar, context, adminPort);
     statusBar.onStateChange = (state, status) => adminPanel.handleStateChange(state, status);
 
     context.subscriptions.push(statusBar);
