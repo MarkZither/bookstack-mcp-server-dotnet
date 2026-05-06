@@ -7,9 +7,21 @@
   "engines": {
     "vscode": "^1.99.0"
   },
-  "extensionKind": ["workspace"],
-  "categories": ["AI", "Chat"],
-  "keywords": ["bookstack", "mcp", "model context protocol", "language-model-tools", "copilot", "knowledge-base"],
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "keywords": [
+    "bookstack",
+    "mcp",
+    "model context protocol",
+    "language-model-tools",
+    "copilot",
+    "knowledge-base"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/MarkZither/bookstack-mcp-server-dotnet#readme",
   "pricing": "Free",
@@ -26,7 +38,9 @@
   },
   "icon": "media/icon.png",
   "main": "./dist/extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "mcpServerDefinitionProviders": [
       {
@@ -55,13 +69,17 @@
         },
         "bookstack.scopedBooks": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "markdownDescription": "Restrict the MCP server to specific books. Each entry is a book ID (e.g. `42`) or slug (e.g. `my-book`). Leave empty for no restriction."
         },
         "bookstack.scopedShelves": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "markdownDescription": "Restrict the MCP server to specific shelves. Each entry is a shelf ID (e.g. `5`) or slug (e.g. `my-shelf`). Leave empty for no restriction."
         },
@@ -80,13 +98,19 @@
         "bookstack.vectorSearch.embeddingProvider": {
           "type": "string",
           "default": "Ollama",
-          "enum": ["Ollama", "AzureOpenAI"],
+          "enum": [
+            "Ollama",
+            "AzureOpenAI"
+          ],
           "markdownDescription": "Embedding model provider. `Ollama` runs locally; `AzureOpenAI` uses Azure OpenAI Service."
         },
         "bookstack.vectorSearch.database": {
           "type": "string",
           "default": "Sqlite",
-          "enum": ["Sqlite", "Postgres"],
+          "enum": [
+            "Sqlite",
+            "Postgres"
+          ],
           "markdownDescription": "Vector store backend. `Sqlite` requires no extra infrastructure; `Postgres` requires pgvector."
         },
         "bookstack.vectorSearch.ollamaUrl": {
@@ -122,6 +146,7 @@
     "package": "vsce package"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "@types/vscode": "^1.99.0",
     "@vscode/vsce": "^3",
     "esbuild": "^0.25",
