@@ -35,7 +35,7 @@ Add `bookstack.adminPort` to `contributes.configuration.properties` in `vscode-e
   "default": 5174,
   "minimum": 1,
   "maximum": 65535,
-  "markdownDescription": "Port of the local admin sidecar. Must match `BOOKSTACK_ADMIN_PORT` set on the MCP server process. Admin features are unavailable when the sidecar is not running."
+  "markdownDescription": "Port for the admin sidecar child process spawned by the extension at activation. Changing this setting restarts the admin child process automatically."
 }
 ```
 
@@ -46,7 +46,9 @@ Add `bookstack.adminPort` to `contributes.configuration.properties` in `vscode-e
 ```mermaid
 graph TD
     subgraph VS Code Extension Host
-        A[extension.ts<br/>activate] --> B[StatusBarManager]
+        A[extension.ts<br/>activate] -->|spawn at activation| K[Admin Child Process<br/>BOOKSTACK_ADMIN_PORT=adminPort]
+        A -->|BOOKSTACK_ADMIN_PORT=0| L[VS Code MCP Process<br/>lazy stdio]
+        A --> B[StatusBarManager]
         A --> C[AdminPanelProvider]
         A --> D[AdminSidecarClient]
         B -->|poll every 30 s<br/>setTimeout + backoff| D
@@ -65,9 +67,9 @@ graph TD
         C -->|postMessage| G & H & I
     end
 
-    D -->|fetch GET /admin/status<br/>5 s timeout| J[Admin Sidecar<br/>localhost:{adminPort}<br/>FEAT-0055]
-    D -->|fetch POST /admin/sync| J
-    D -->|fetch POST /admin/index| J
+    D -->|fetch GET /admin/status<br/>5 s timeout| K
+    D -->|fetch POST /admin/sync| K
+    D -->|fetch POST /admin/index| K
 ```
 
 ---
@@ -543,27 +545,33 @@ import { AdminPanelProvider } from './adminPanelProvider';
 Add the following block inside `activate`, after the existing MCP provider registration succeeds:
 
 ```typescript
-// Admin sidecar status bar and panel
-const adminClient = new AdminSidecarClient(resolveAdminPort);
+// Spawn a persistent admin sidecar child process at activation so the status
+// bar and panel work without waiting for VS Code to lazily start the MCP process.
+let adminPort = resolveAdminPort();
+let adminProcess: ChildProcess | null = null;
 
+function spawnAdminProcess(): void { /* spawn binary with BOOKSTACK_ADMIN_PORT=adminPort */ }
+function restartAdminProcess(): void { adminProcess?.kill(); adminPort = resolveAdminPort(); spawnAdminProcess(); }
+
+context.subscriptions.push({ dispose() { adminProcess?.kill(); } });
+spawnAdminProcess();
+
+// VS Code MCP process gets BOOKSTACK_ADMIN_PORT=0 to avoid port conflicts.
+// (McpStdioServerDefinition env already set above.)
+
+const adminClient = new AdminSidecarClient(() => adminPort);
 const statusBarManager = new StatusBarManager(adminClient, 'bookstack.openAdminPanel');
-
-const adminPanelProvider = new AdminPanelProvider(adminClient, statusBarManager, context);
+const adminPanelProvider = new AdminPanelProvider(adminClient, statusBarManager, context, adminPort);
 
 statusBarManager.onStateChange = (state, latestStatus) => {
-    const unreachable = state.kind === 'unreachable';
-    adminPanelProvider.updateStats(latestStatus, unreachable);
+    adminPanelProvider.handleStateChange(state, latestStatus);
 };
 
-const openPanelCmd = vscode.commands.registerCommand('bookstack.openAdminPanel', () => {
-    const unreachable = statusBarManager.currentState.kind === 'unreachable';
-    adminPanelProvider.openOrFocus(statusBarManager.latestStatus, unreachable);
-});
-
-context.subscriptions.push(statusBarManager, adminPanelProvider, openPanelCmd);
+context.subscriptions.push(statusBarManager, adminPanelProvider,
+    vscode.commands.registerCommand('bookstack.openAdminPanel', () => adminPanelProvider.openOrFocus()));
 ```
 
-> The `AdminSidecarClient` is constructed with `resolveAdminPort` as the `getPort` callback (not a captured value), so configuration changes take effect on the next poll without requiring an extension restart.
+> The `onDidChangeConfiguration` watcher in the MCP provider block also calls `restartAdminProcess()` so config changes restart both the MCP process and the admin child process atomically.
 
 ---
 

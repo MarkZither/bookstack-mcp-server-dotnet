@@ -1,6 +1,6 @@
 # ADR-0019: Admin Sidecar Hosting — Always-WebApplication with Second Kestrel Listener
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-05-05
 **Author**: GitHub Copilot
 **Deciders**: bookstack-mcp-server-dotnet maintainers
@@ -173,6 +173,19 @@ listener. When `adminPort == 0`, the existing `Host.CreateApplicationBuilder` pa
   option analysis.
 - When `ASPNETCORE_URLS` is set by an operator alongside explicit `ConfigureKestrel` `Listen`
   calls, both sets of addresses are active. Operational documentation must note this interaction.
+
+---
+
+## Implementation Note — VS Code Extension Hosting
+
+During implementation of FEAT-0056 it became apparent that VS Code starts `McpStdioServerDefinition` processes **lazily** — only on the first chat interaction. Because the admin sidecar is embedded in the MCP process, this meant the status bar and WebviewPanel always showed "unreachable" until the user initiated a chat.
+
+To resolve this without changing the .NET server design, the VS Code extension (`extension.ts`) now:
+
+1. Spawns the binary as its **own eager child process** at extension activation, with `BOOKSTACK_ADMIN_PORT` set to the configured port. This process binds the admin listener immediately.
+2. Passes `BOOKSTACK_ADMIN_PORT=0` to the `McpStdioServerDefinition` env vars so the lazily-started MCP process does **not** attempt to bind the same port.
+
+This is an extension-side concern only; the .NET server hosting model described in this ADR is unchanged. The `stdio` + `adminPort > 0` path using `WebApplication` is still the correct choice — it is exercised by the eager child process, not by the VS Code MCP host process.
 
 ---
 

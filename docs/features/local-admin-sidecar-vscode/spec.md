@@ -37,7 +37,7 @@ After the vector index (FEAT-0005) and the local admin sidecar (FEAT-0055) are i
 - Kestrel second-listener setup, REST endpoint contracts, or `BOOKSTACK_ADMIN_PORT` env var (FEAT-0055).
 - Authenticating to the admin sidecar with a pre-shared token (future phase, aligned with FEAT-0055 roadmap).
 - Displaying anything other than index-related information in the WebviewPanel (e.g., BookStack content browsing).
-- Starting or stopping the admin sidecar from within the extension.
+- Authenticating the admin child process against BookStack beyond the configured API token.
 - A dedicated output channel or progress notification for sync; the status bar and WebviewPanel are the sole feedback surfaces.
 
 ---
@@ -46,7 +46,7 @@ After the vector index (FEAT-0005) and the local admin sidecar (FEAT-0055) are i
 
 ### Functional Requirements
 
-1. The extension MUST contribute a `bookstack.adminPort` setting of type `number`, default `5174`, with a description indicating it must match the value of `BOOKSTACK_ADMIN_PORT` set on the MCP server process.
+1. The extension MUST contribute a `bookstack.adminPort` setting of type `number`, default `5174`, used as the port for the admin sidecar child process spawned by the extension.
 2. The extension MUST create a status bar item in the right-aligned section on activation, with priority such that it is visible but does not interfere with language/git indicators.
 3. The status bar item MUST display `$(database) BookStack: {n} pages` (where `{n}` is `totalPages` from `GET /admin/status`) when the sidecar is reachable and no sync is in progress.
 4. The status bar item MUST display `$(sync~spin) BookStack: syncing…` when a sync operation is known to be in progress (i.e., after the user clicks "Sync Now" and before the next successful poll confirms `pendingCount` has returned to 0).
@@ -61,7 +61,7 @@ After the vector index (FEAT-0005) and the local admin sidecar (FEAT-0055) are i
 13. After "Sync Now" is clicked, the WebviewPanel MUST show an inline status message `Sync started` and the status bar item MUST switch to the `syncing` state immediately (before the next poll).
 14. After "Index Page" is clicked, the WebviewPanel MUST show an inline status message `Indexing started` on success or a descriptive inline error message on failure (e.g., `Error: invalid URL`).
 15. The WebviewPanel MUST refresh its stats table on every successful poll while the panel is visible.
-16. When the sidecar is unreachable, the WebviewPanel MUST display a `$(warning) Admin sidecar unreachable. Check that the MCP server is running and bookstack.adminPort is correct.` message in place of the stats table, and the Sync Now and Index Page controls MUST be disabled.
+16. When the sidecar is unreachable, the WebviewPanel MUST display a warning message including the configured port number and a link to open the `bookstack.adminPort` setting, in place of the stats table, and the Sync Now and Index Page controls MUST be disabled.
 17. The extension MUST dispose the status bar item and stop polling when deactivated.
 
 ### Non-Functional Requirements
@@ -81,7 +81,8 @@ After the vector index (FEAT-0005) and the local admin sidecar (FEAT-0055) are i
 ```mermaid
 graph TD
     subgraph VS Code Extension Host
-        A[Extension Activation<br/>extension.ts] --> B[StatusBarManager]
+        A[Extension Activation<br/>extension.ts] -->|spawn at activation| K[Admin Child Process<br/>binary + BOOKSTACK_ADMIN_PORT]
+        A --> B[StatusBarManager]
         A --> C[AdminPanelProvider]
         B -->|poll every 30 s<br/>with backoff| D[AdminSidecarClient<br/>HTTP GET /admin/status]
         C -->|on Sync Now| E[AdminSidecarClient<br/>HTTP POST /admin/sync]
@@ -93,16 +94,21 @@ graph TD
         H[Sync Now button] -->|postMessage| C
         I[URL input + Index Page] -->|postMessage| C
     end
-    D -->|JSON| J[Admin Sidecar<br/>localhost:5174<br/>FEAT-0055]
-    E --> J
-    F --> J
+    A -->|BOOKSTACK_ADMIN_PORT=0| L[VS Code MCP Process<br/>lazy stdio server]
+    D -->|JSON| K
+    E --> K
+    F --> K
+    K -->|127.0.0.1:adminPort| J[Admin Sidecar HTTP
+FEAT-0055 endpoints]
 ```
+
+> **Note**: VS Code starts `McpStdioServerDefinition` processes lazily (on first chat interaction). The extension therefore spawns its own eager child process at activation to host the admin sidecar, and passes `BOOKSTACK_ADMIN_PORT=0` to the VS Code MCP process to avoid port conflicts.
 
 ### VS Code Setting
 
 | Setting | Type | Default | Description |
 |---|---|---|---|
-| `bookstack.adminPort` | `number` | `5174` | Port of the local admin sidecar. Must match `BOOKSTACK_ADMIN_PORT` on the MCP server process. |
+| `bookstack.adminPort` | `number` | `5174` | Port for the admin sidecar child process spawned by the extension at activation. |
 
 ### Status Bar States
 
