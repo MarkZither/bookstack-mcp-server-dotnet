@@ -16,7 +16,7 @@ public sealed class Attachment
     public int Order { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-    public UserSummary? CreatedBy { get; set; }
-    public UserSummary? UpdatedBy { get; set; }
+    public int CreatedBy { get; set; }
+    public int UpdatedBy { get; set; }
     public AttachmentLinks Links { get; set; } = new();
 }

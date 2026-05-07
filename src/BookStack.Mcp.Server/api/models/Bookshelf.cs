@@ -9,9 +9,9 @@ public class Bookshelf
     public string? DescriptionHtml { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-    public UserSummary? CreatedBy { get; set; }
-    public UserSummary? UpdatedBy { get; set; }
-    public UserSummary? OwnedBy { get; set; }
+    public int CreatedBy { get; set; }
+    public int UpdatedBy { get; set; }
+    public int OwnedBy { get; set; }
     public int? ImageId { get; set; }
     public IReadOnlyList<Tag> Tags { get; set; } = [];
     public Image? Cover { get; set; }
