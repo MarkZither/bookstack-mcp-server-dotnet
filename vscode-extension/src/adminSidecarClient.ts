@@ -45,7 +45,10 @@ export class AdminSidecarClient {
                 signal: controller.signal,
             });
             if (!response.ok) {
-                return { ok: false, kind: 'unreachable', message: `HTTP ${response.status}` };
+                // 5xx = server is reachable but erroring; 4xx non-404 = unexpected
+                // Treat 404/connection-refused as unreachable, server errors as 'error'
+                const kind = response.status >= 500 ? 'error' : 'unreachable';
+                return { ok: false, kind, message: `HTTP ${response.status}` };
             }
             let data: T;
             try {

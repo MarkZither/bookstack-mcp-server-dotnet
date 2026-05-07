@@ -7,6 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>BookStack.Mcp.Server</RootNamespace>
+    <!-- Bundle native libraries (e.g. e_sqlite3.so) inside the single-file exe
+         so they are extracted to ~/.net/{app}/{hash}/ at runtime rather than
+         being required alongside the binary. -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
