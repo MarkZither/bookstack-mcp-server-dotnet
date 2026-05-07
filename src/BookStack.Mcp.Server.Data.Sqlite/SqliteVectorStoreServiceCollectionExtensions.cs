@@ -16,6 +16,9 @@ public static class SqliteVectorStoreServiceCollectionExtensions
         services.AddSingleton<IVectorStore>(sp =>
         {
             var factory = sp.GetRequiredService<IDbContextFactory<SyncMetadataDbContext>>();
+            // Ensure the sync_metadata table exists before first use.
+            using var ctx = factory.CreateDbContext();
+            ctx.Database.EnsureCreated();
             return new SqliteVectorStore(connectionString, factory);
         });
 
