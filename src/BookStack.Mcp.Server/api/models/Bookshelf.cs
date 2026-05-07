@@ -19,5 +19,8 @@ public class Bookshelf
 
 public sealed class BookshelfWithBooks : Bookshelf
 {
+    public new UserSummary? CreatedBy { get; set; }
+    public new UserSummary? UpdatedBy { get; set; }
+    public new UserSummary? OwnedBy { get; set; }
     public IReadOnlyList<Book> Books { get; set; } = [];
 }

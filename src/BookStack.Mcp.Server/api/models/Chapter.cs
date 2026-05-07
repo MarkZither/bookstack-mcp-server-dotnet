@@ -19,5 +19,8 @@ public class Chapter
 
 public sealed class ChapterWithPages : Chapter
 {
+    public new UserSummary? CreatedBy { get; set; }
+    public new UserSummary? UpdatedBy { get; set; }
+    public new UserSummary? OwnedBy { get; set; }
     public IReadOnlyList<Page> Pages { get; set; } = [];
 }

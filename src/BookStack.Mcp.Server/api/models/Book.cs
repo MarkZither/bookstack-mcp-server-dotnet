@@ -20,5 +20,8 @@ public class Book
 
 public sealed class BookWithContents : Book
 {
+    public new UserSummary? CreatedBy { get; set; }
+    public new UserSummary? UpdatedBy { get; set; }
+    public new UserSummary? OwnedBy { get; set; }
     public IReadOnlyList<object> Contents { get; set; } = [];
 }

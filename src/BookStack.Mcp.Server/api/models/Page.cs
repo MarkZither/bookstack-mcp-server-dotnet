@@ -22,6 +22,9 @@ public class Page
 
 public sealed class PageWithContent : Page
 {
+    public new UserSummary? CreatedBy { get; set; }
+    public new UserSummary? UpdatedBy { get; set; }
+    public new UserSummary? OwnedBy { get; set; }
     public string Html { get; set; } = string.Empty;
     public string RawHtml { get; set; } = string.Empty;
     public string? Markdown { get; set; }
