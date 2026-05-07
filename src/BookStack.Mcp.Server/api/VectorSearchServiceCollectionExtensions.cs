@@ -81,6 +81,12 @@ public static class VectorSearchServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("VectorDb")
             ?? "Data Source=bookstack-vectors.db";
 
+        // If the connection string uses a bare filename (no directory separator),
+        // resolve it to a writable per-user data directory so the database can be
+        // created regardless of the working directory (which may be read-only when
+        // the process is spawned by a VS Code extension or CI runner).
+        connectionString = ResolveDataSourcePath(connectionString);
+
         if (string.Equals(db, "Postgres", StringComparison.OrdinalIgnoreCase))
         {
             services.AddPostgresVectorStore(connectionString);
@@ -90,6 +96,39 @@ public static class VectorSearchServiceCollectionExtensions
             // Default: Sqlite
             services.AddSqliteVectorStore(connectionString);
         }
+    }
+
+    /// <summary>
+    /// If the SQLite connection string contains a relative <c>Data Source</c> filename
+    /// (no directory component), replaces it with an absolute path under
+    /// <c>%LOCALAPPDATA%/bookstack-mcp</c> (Windows) or
+    /// <c>~/.local/share/bookstack-mcp</c> (Linux/macOS).
+    /// Connection strings that already contain an absolute path, a URI, or
+    /// <c>:memory:</c> are returned unchanged.
+    /// </summary>
+    private static string ResolveDataSourcePath(string connectionString)
+    {
+        // Parse the Data Source value from the connection string.
+        var builder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString);
+        var dataSource = builder.DataSource;
+
+        if (string.IsNullOrEmpty(dataSource)
+            || dataSource.Equals(":memory:", StringComparison.OrdinalIgnoreCase)
+            || Path.IsPathRooted(dataSource)
+            || dataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+        {
+            return connectionString;
+        }
+
+        var appData = Environment.GetFolderPath(
+            Environment.SpecialFolder.LocalApplicationData,
+            Environment.SpecialFolderOption.Create);
+
+        var dir = Path.Combine(appData, "bookstack-mcp");
+        Directory.CreateDirectory(dir);
+
+        builder.DataSource = Path.Combine(dir, dataSource);
+        return builder.ToString();
     }
 
     private sealed class DisabledVectorStore : IVectorStore
