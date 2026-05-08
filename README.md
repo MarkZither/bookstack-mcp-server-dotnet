@@ -89,6 +89,30 @@ docker compose up -d
 | `VectorSearch__Sync__IntervalHours` | — | How often to sync embeddings (default: `24`) |
 | `VectorSearch__Sync__BatchSize` | — | Pages per sync batch (default: `50`) |
 
+### Local Development (self-hosted BookStack + F5 debugging)
+
+Run a full local stack — BookStack, MariaDB, and the MCP server — with no external dependencies.
+
+**Prerequisites**: Docker Engine 20.10+, .NET 10 SDK, VS Code
+
+```bash
+git clone https://github.com/MarkZither/bookstack-mcp-server-dotnet.git
+cd bookstack-mcp-server-dotnet
+
+# Required: create your local env file (gitignored — never committed)
+cp .env.dev.example .env.dev
+
+# Required: generate a BookStack app key and append it to .env.dev
+docker run --rm --entrypoint /bin/bash lscr.io/linuxserver/bookstack:latest appkey \
+  | sed 's/^/APP_KEY=/' >> .env.dev
+```
+
+Then press **F5** in VS Code. The pre-launch task starts BookStack and MariaDB, waits until they are healthy, and then launches the MCP server with the debugger attached.
+
+On first run, open <http://localhost:6875>, log in with `admin@admin.com` / `password`, generate an API token (Profile → API Tokens → Add Token), and paste the token ID and secret into `.env.dev`.
+
+See [docs/developer-guide.md](docs/developer-guide.md) for the full setup walkthrough including Ollama integration and the data seed script.
+
 ### Build from Source
 
 **Prerequisites**: [.NET 10 SDK](https://dotnet.microsoft.com/download)
