@@ -1,0 +1,111 @@
+# BookStack MCP Server — Local Developer Environment
+#
+# Brings up a fully self-hosted BookStack (MariaDB + BookStack) alongside a
+# development build of the MCP server. All data is persisted in named Docker
+# volumes so it survives container restarts.
+#
+# Usage:
+#   cp .env.dev.example .env.dev    # fill in credentials after BookStack first-run
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# With local Ollama container:
+#   docker compose -f docker-compose.dev.yml --profile ollama up -d
+#
+# With Ollama on Windows host (WSL2 scenario):
+#   Set OLLAMA_BASE_URL=http://host-gateway:11434 in .env.dev
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# BookStack UI:  http://localhost:6875   (default credentials: admin@admin.com / password)
+# MCP endpoint:  http://localhost:3001/mcp  (Bearer token from BOOKSTACK_MCP_HTTP_AUTH_TOKEN)
+# Health check:  http://localhost:3001/health
+
+name: bookstack-mcp-dev
+
+services:
+
+  bookstack-db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    volumes:
+      - dev_mariadb_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # Uncomment to expose MariaDB directly on the host (opt-in only):
+    # ports:
+    #   - "3306:3306"
+
+  bookstack:
+    image: lscr.io/linuxserver/bookstack
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    depends_on:
+      bookstack-db:
+        condition: service_healthy
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      APP_URL: ${APP_URL}
+      APP_KEY: ${APP_KEY}
+      DB_HOST: bookstack-db
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - dev_bookstack_data:/config
+    ports:
+      - "6875:80"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:80/login"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
+
+  bookstack-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      bookstack:
+        condition: service_healthy
+    env_file:
+      - .env.dev
+    environment:
+      # Force HTTP transport regardless of what .env.dev sets.
+      # Per ADR-0009: HTTP mode keeps stdout clean for tooling.
+      BOOKSTACK_MCP_TRANSPORT: http
+    ports:
+      - "${BOOKSTACK_MCP_HTTP_PORT:-3001}:${BOOKSTACK_MCP_HTTP_PORT:-3001}"
+    extra_hosts:
+      # Allows containers to reach Ollama (or any service) running on the Windows host
+      # from WSL2. Set OLLAMA_BASE_URL=http://host-gateway:11434 in .env.dev to use it.
+      - "host-gateway:host-gateway"
+
+  ollama:
+    image: ollama/ollama
+    restart: unless-stopped
+    profiles:
+      - ollama
+    volumes:
+      - dev_ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+volumes:
+  dev_mariadb_data:
+  dev_bookstack_data:
+  dev_ollama_data:

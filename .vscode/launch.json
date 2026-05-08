@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "BookStack MCP Server (local dev)",
+      "type": "dotnet",
+      "request": "launch",
+      "preLaunchTask": "Start dev dependencies",
+      "projectPath": "${workspaceFolder}/src/BookStack.Mcp.Server/BookStack.Mcp.Server.csproj",
+      "envFile": "${workspaceFolder}/.env.dev",
+      "env": {
+        // Override the container-internal BookStack URL with the host-accessible URL
+        // that the dev Compose file exposes on port 6875.
+        "BOOKSTACK_BASE_URL": "http://localhost:6875",
+        // Force HTTP transport so stdout stays clean for the debugger (ADR-0009).
+        "BOOKSTACK_MCP_TRANSPORT": "http",
+        // Bind to the configured MCP port instead of Kestrel's default dev port.
+        "ASPNETCORE_URLS": "http://localhost:3001",
+        // Disable the admin sidecar (default port 5174) to avoid port conflicts locally.
+        // Set to a free port number to enable it.
+        "BOOKSTACK_ADMIN_PORT": "0"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

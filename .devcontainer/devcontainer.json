@@ -1,0 +1,21 @@
+{
+  "name": "BookStack MCP Server",
+  "dockerComposeFile": ["../docker-compose.dev.yml"],
+  "service": "bookstack-mcp",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  // remoteUser must match the user the Dockerfile runs the server as.
+  // If the Dockerfile is updated to use a non-root user, update this value to match.
+  "remoteUser": "root"
+}
