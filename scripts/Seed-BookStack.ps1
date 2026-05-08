@@ -53,7 +53,7 @@ param(
     [string] $TokenId         = ($env:BOOKSTACK_TOKEN_ID ?? ''),
     [string] $TokenSecret     = ($env:BOOKSTACK_TOKEN_SECRET ?? ''),
     [string] $OllamaBaseUrl   = ($env:OLLAMA_BASE_URL ?? 'http://localhost:11434'),
-    [string] $OllamaModel     = ($env:OLLAMA_MODEL ?? 'llama3.2'),
+    [string] $OllamaModel     = ($env:OLLAMA_MODEL ?? 'phi4-mini-reasoning'),
 
     [switch] $DryRun
 )
