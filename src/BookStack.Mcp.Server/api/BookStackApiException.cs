@@ -5,13 +5,19 @@ public sealed class BookStackApiException : Exception
     public int StatusCode { get; }
     public string? ErrorMessage { get; }
     public string? ErrorCode { get; }
+    public IReadOnlyDictionary<string, string[]>? ValidationErrors { get; }
 
-    public BookStackApiException(int statusCode, string? errorMessage, string? errorCode)
+    public BookStackApiException(
+        int statusCode,
+        string? errorMessage,
+        string? errorCode,
+        IReadOnlyDictionary<string, string[]>? validationErrors = null)
         : base(BuildMessage(statusCode, errorMessage))
     {
         StatusCode = statusCode;
         ErrorMessage = errorMessage;
         ErrorCode = errorCode;
+        ValidationErrors = validationErrors;
     }
 
     private static string BuildMessage(int statusCode, string? errorMessage) => statusCode switch

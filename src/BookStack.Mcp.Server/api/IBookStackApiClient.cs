@@ -23,9 +23,9 @@ public interface IBookStackApiClient
     // Pages
     Task<ListResponse<Page>> ListPagesAsync(ListQueryParams? query = null, CancellationToken cancellationToken = default);
     Task<ListResponse<Page>> GetPagesUpdatedSinceAsync(DateTimeOffset updatedAfter, int count = 500, CancellationToken cancellationToken = default);
-    Task<Page> CreatePageAsync(CreatePageRequest request, CancellationToken cancellationToken = default);
+    Task<PageWithContent> CreatePageAsync(CreatePageRequest request, CancellationToken cancellationToken = default);
     Task<PageWithContent> GetPageAsync(int id, CancellationToken cancellationToken = default);
-    Task<Page> UpdatePageAsync(int id, UpdatePageRequest request, CancellationToken cancellationToken = default);
+    Task<PageWithContent> UpdatePageAsync(int id, UpdatePageRequest request, CancellationToken cancellationToken = default);
     Task DeletePageAsync(int id, CancellationToken cancellationToken = default);
     Task<string> ExportPageAsync(int id, ExportFormat format, CancellationToken cancellationToken = default);
 

@@ -22,11 +22,11 @@ public sealed partial class BookStackApiClient
         return SendAsync<ListResponse<Page>>(JsonRequest(HttpMethod.Get, url), cancellationToken);
     }
 
-    public Task<Page> CreatePageAsync(
+    public Task<PageWithContent> CreatePageAsync(
         CreatePageRequest request,
         CancellationToken cancellationToken = default)
     {
-        return SendAsync<Page>(JsonRequest(HttpMethod.Post, "pages", request), cancellationToken);
+        return SendAsync<PageWithContent>(JsonRequest(HttpMethod.Post, "pages", request), cancellationToken);
     }
 
     public Task<PageWithContent> GetPageAsync(
@@ -36,12 +36,12 @@ public sealed partial class BookStackApiClient
         return SendAsync<PageWithContent>(JsonRequest(HttpMethod.Get, $"pages/{id}"), cancellationToken);
     }
 
-    public Task<Page> UpdatePageAsync(
+    public Task<PageWithContent> UpdatePageAsync(
         int id,
         UpdatePageRequest request,
         CancellationToken cancellationToken = default)
     {
-        return SendAsync<Page>(JsonRequest(HttpMethod.Put, $"pages/{id}", request), cancellationToken);
+        return SendAsync<PageWithContent>(JsonRequest(HttpMethod.Put, $"pages/{id}", request), cancellationToken);
     }
 
     public Task DeletePageAsync(

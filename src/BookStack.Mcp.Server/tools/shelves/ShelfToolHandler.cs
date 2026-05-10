@@ -52,7 +52,7 @@ internal sealed class ShelfToolHandler(
         }
         catch (BookStackApiException ex) when (ex.StatusCode == 422)
         {
-            return JsonSerializer.Serialize(new { error = "validation_error", message = ex.ErrorMessage }, _jsonOptions);
+            return JsonSerializer.Serialize(new { error = "validation_error", message = ex.ErrorMessage, validation = ex.ValidationErrors }, _jsonOptions);
         }
         catch (BookStackApiException ex)
         {
@@ -113,7 +113,7 @@ internal sealed class ShelfToolHandler(
         }
         catch (BookStackApiException ex) when (ex.StatusCode == 422)
         {
-            return JsonSerializer.Serialize(new { error = "validation_error", message = ex.ErrorMessage }, _jsonOptions);
+            return JsonSerializer.Serialize(new { error = "validation_error", message = ex.ErrorMessage, validation = ex.ValidationErrors }, _jsonOptions);
         }
         catch (BookStackApiException ex)
         {
@@ -157,7 +157,7 @@ internal sealed class ShelfToolHandler(
         }
         catch (BookStackApiException ex) when (ex.StatusCode == 422)
         {
-            return JsonSerializer.Serialize(new { error = "validation_error", message = ex.ErrorMessage }, _jsonOptions);
+            return JsonSerializer.Serialize(new { error = "validation_error", message = ex.ErrorMessage, validation = ex.ValidationErrors }, _jsonOptions);
         }
         catch (BookStackApiException ex)
         {

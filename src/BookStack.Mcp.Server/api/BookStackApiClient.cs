@@ -13,6 +13,7 @@ public sealed partial class BookStackApiClient : IBookStackApiClient
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
     };
 
     private readonly HttpClient _httpClient;
@@ -72,6 +73,7 @@ public sealed partial class BookStackApiClient : IBookStackApiClient
 
         string? errorMessage = null;
         string? errorCode = null;
+        Dictionary<string, string[]>? validationErrors = null;
 
         try
         {
@@ -81,6 +83,19 @@ public sealed partial class BookStackApiClient : IBookStackApiClient
             {
                 errorMessage = errorElement.TryGetProperty("message", out var msg) ? msg.GetString() : null;
                 errorCode = errorElement.TryGetProperty("code", out var code) ? code.GetRawText() : null;
+
+                if (errorElement.TryGetProperty("validation", out var validation)
+                    && validation.ValueKind == JsonValueKind.Object)
+                {
+                    validationErrors = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var field in validation.EnumerateObject())
+                    {
+                        var messages = field.Value.ValueKind == JsonValueKind.Array
+                            ? field.Value.EnumerateArray().Select(e => e.GetString() ?? string.Empty).ToArray()
+                            : [field.Value.GetString() ?? string.Empty];
+                        validationErrors[field.Name] = messages;
+                    }
+                }
             }
         }
         catch (JsonException)
@@ -88,7 +103,7 @@ public sealed partial class BookStackApiClient : IBookStackApiClient
             // Non-JSON error body; leave message/code null
         }
 
-        throw new BookStackApiException((int)response.StatusCode, errorMessage, errorCode);
+        throw new BookStackApiException((int)response.StatusCode, errorMessage, errorCode, validationErrors);
     }
 
     private static string GetExportUrlSegment(ExportFormat format)
