@@ -52,11 +52,26 @@ param(
     [string] $BookStackBaseUrl = ($env:BOOKSTACK_BASE_URL ?? 'http://localhost:6875'),
     [string] $TokenId         = ($env:BOOKSTACK_TOKEN_ID ?? ''),
     [string] $TokenSecret     = ($env:BOOKSTACK_TOKEN_SECRET ?? ''),
+
+    # LLM provider: ollama | groq | mistral
+    [ValidateSet('ollama','groq','mistral')]
+    [string] $Provider        = ($env:LLM_PROVIDER ?? 'ollama'),
+    [string] $LlmModel        = ($env:LLM_MODEL ?? ''),
+    [string] $ApiKey          = ($env:LLM_API_KEY ?? ''),
+    # Ollama-specific (ignored for groq/mistral)
     [string] $OllamaBaseUrl   = ($env:OLLAMA_BASE_URL ?? 'http://localhost:11434'),
-    [string] $OllamaModel     = ($env:OLLAMA_MODEL ?? 'phi4-mini-reasoning'),
 
     [switch] $DryRun
 )
+
+# Resolve default model per provider if not overridden
+if (-not $LlmModel) {
+    $LlmModel = switch ($Provider) {
+        'groq'    { 'llama-3.3-70b-versatile' }
+        'mistral' { 'mistral-small-latest' }
+        default   { $env:OLLAMA_MODEL ?? 'phi4-mini-reasoning' }
+    }
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -65,16 +80,18 @@ $ErrorActionPreference = 'Stop'
 # Helpers
 # ---------------------------------------------------------------------------
 
+function Get-Timestamp { return (Get-Date -Format 'HH:mm:ss') }
+
 function Write-Step([string]$Message) {
-    Write-Host "  --> $Message" -ForegroundColor Cyan
+    Write-Host "  [$(Get-Timestamp)] --> $Message" -ForegroundColor Cyan
 }
 
 function Write-Success([string]$Message) {
-    Write-Host "  [OK] $Message" -ForegroundColor Green
+    Write-Host "  [$(Get-Timestamp)]  OK  $Message" -ForegroundColor Green
 }
 
 function Write-Warn([string]$Message) {
-    Write-Host "  [!!] $Message" -ForegroundColor Yellow
+    Write-Host "  [$(Get-Timestamp)]  !!  $Message" -ForegroundColor Yellow
 }
 
 function Get-BookStackAuthHeader {
@@ -116,42 +133,85 @@ function Invoke-BookStackApi {
     }
 }
 
-function Invoke-Ollama {
+function Invoke-Llm {
     param(
         [string] $Prompt,
         [string] $SystemPrompt = ''
     )
 
-    $url  = "$($OllamaBaseUrl.TrimEnd('/'))/api/generate"
-    $body = @{
-        model  = $OllamaModel
-        prompt = $Prompt
-        stream = $false
-    }
-    if ($SystemPrompt) {
-        $body['system'] = $SystemPrompt
-    }
+    $messages = [System.Collections.Generic.List[hashtable]]::new()
+    if ($SystemPrompt) { $messages.Add(@{ role = 'system'; content = $SystemPrompt }) }
+    $messages.Add(@{ role = 'user'; content = $Prompt })
 
-    Write-Step "Calling Ollama ($OllamaModel)..."
+    Write-Step "Calling $Provider ($LlmModel)..."
 
-    try {
-        $response = Invoke-RestMethod -Method Post -Uri $url `
-            -ContentType 'application/json' `
-            -Body ($body | ConvertTo-Json -Compress)
-        return $response.response
+    if ($Provider -eq 'ollama') {
+        $url  = "$($OllamaBaseUrl.TrimEnd('/'))/api/chat"
+        $body = @{
+            model    = $LlmModel
+            messages = $messages.ToArray()
+            stream   = $false
+            think    = $false
+        }
+        try {
+            $response = Invoke-RestMethod -Method Post -Uri $url `
+                -ContentType 'application/json' `
+                -Body ($body | ConvertTo-Json -Depth 10 -Compress)
+            return $response.message.content
+        }
+        catch {
+            $statusCode = $_.Exception.Response?.StatusCode?.value__ ?? 'unknown'
+            throw "Ollama API call failed — HTTP $statusCode : $($_.Exception.Message)"
+        }
     }
-    catch {
-        $statusCode = $_.Exception.Response?.StatusCode?.value__ ?? 'unknown'
-        throw "Ollama API call failed — HTTP $statusCode : $($_.Exception.Message)"
+    else {
+        # Groq and Mistral both expose an OpenAI-compatible chat completions endpoint
+        if ([string]::IsNullOrWhiteSpace($ApiKey)) {
+            throw "$Provider requires an API key. Pass -ApiKey or set LLM_API_KEY."
+        }
+        $url = switch ($Provider) {
+            'groq'    { 'https://api.groq.com/openai/v1/chat/completions' }
+            'mistral' { 'https://api.mistral.ai/v1/chat/completions' }
+        }
+        $body = @{
+            model    = $LlmModel
+            messages = $messages.ToArray()
+        }
+        $headers = @{
+            Authorization  = "Bearer $ApiKey"
+            'Content-Type' = 'application/json'
+        }
+        try {
+            $response = Invoke-RestMethod -Method Post -Uri $url `
+                -Headers $headers `
+                -Body ($body | ConvertTo-Json -Depth 10 -Compress)
+            return $response.choices[0].message.content
+        }
+        catch {
+            $statusCode = $_.Exception.Response?.StatusCode?.value__ ?? 'unknown'
+            throw "$Provider API call failed — HTTP $statusCode : $($_.Exception.Message)"
+        }
     }
 }
 
 function ConvertFrom-OllamaJson {
     param([string] $RawText)
 
-    # Strip markdown code fences if the model wrapped the JSON
-    $cleaned = $RawText -replace '(?s)^```(?:json)?\s*', '' -replace '(?s)\s*```\s*$', ''
+    # Strip <think>...</think> reasoning blocks emitted by chain-of-thought models.
+    # Uses greedy match so it handles multiple blocks or unclosed tags.
+    $cleaned = [regex]::Replace($RawText, '(?s)<think>.*?</think>', '')
+    # Also strip any remaining unclosed <think> block (model truncated mid-thought)
+    $cleaned = [regex]::Replace($cleaned, '(?s)<think>.*$', '')
+    # Strip markdown code fences
+    $cleaned = [regex]::Replace($cleaned, '(?s)^```(?:json)?\s*', '')
+    $cleaned = [regex]::Replace($cleaned, '(?s)\s*```\s*$', '')
     $cleaned = $cleaned.Trim()
+
+    # Extract the first JSON object or array in case of extra surrounding text
+    $jsonMatch = [regex]::Match($cleaned, '(?s)(\{.*\}|\[.*\])')
+    if ($jsonMatch.Success) {
+        $cleaned = $jsonMatch.Value.Trim()
+    }
 
     try {
         return $cleaned | ConvertFrom-Json -Depth 20
@@ -191,13 +251,13 @@ $outlinePrompt = "Create a detailed technical book outline about: $Topic"
 Write-Host ""
 Write-Host "BookStack Seed Script" -ForegroundColor White
 Write-Host "Topic : $Topic" -ForegroundColor White
-Write-Host "Model : $OllamaModel @ $OllamaBaseUrl" -ForegroundColor White
+Write-Host "Model : $LlmModel ($Provider)" -ForegroundColor White
 Write-Host "Target: $BookStackBaseUrl" -ForegroundColor White
 if ($DryRun) { Write-Warn "DRY RUN — no BookStack API calls will be made" }
 Write-Host ""
 
 Write-Host "[1/3] Generating book outline..." -ForegroundColor Magenta
-$outlineRaw = Invoke-Ollama -Prompt $outlinePrompt -SystemPrompt $outlineSystem
+$outlineRaw = Invoke-Llm -Prompt $outlinePrompt -SystemPrompt $outlineSystem
 $outline    = ConvertFrom-OllamaJson -RawText $outlineRaw
 
 Write-Success "Book: $($outline.title)"
@@ -233,7 +293,7 @@ foreach ($chapter in $outline.chapters) {
     foreach ($page in $chapter.pages) {
         $pagePrompt = "Book: $($outline.title)`nChapter: $($chapter.title)`nPage title: $($page.title)`n`nWrite the wiki page content."
         Write-Step "[$chapterIndex] $($chapter.title) / $($page.title)"
-        $content = Invoke-Ollama -Prompt $pagePrompt -SystemPrompt $pageSystem
+        $content = Invoke-Llm -Prompt $pagePrompt -SystemPrompt $pageSystem
         $allPages.Add(@{
             ChapterTitle = $chapter.title
             ChapterDesc  = $chapter.description
