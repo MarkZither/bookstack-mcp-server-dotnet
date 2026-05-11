@@ -170,6 +170,41 @@ The server syncs page content to the vector database on a configurable schedule 
 
 See the [docker-compose.sqlite.yml](docker-compose.sqlite.yml) and [docker-compose.postgres.yml](docker-compose.postgres.yml) files for ready-to-run examples.
 
+### SQLite database file location
+
+When using the SQLite provider the database is created at a predictable per-user location:
+
+| Platform | Path |
+|----------|------|
+| Linux / macOS | `~/.local/share/bookstack-mcp/bookstack-vectors.db` |
+| Windows | `%LOCALAPPDATA%\bookstack-mcp\bookstack-vectors.db` |
+
+The VS Code Admin Panel (BookStack status bar → click) shows the resolved path and lets you reveal it in your file manager.
+
+### Browsing the SQLite database
+
+The `page_vectors` table is a **sqlite-vec virtual table** (`vec0` module). Generic SQLite browsers (DB Browser for SQLite, DBeaver, etc.) fail to open the file unless the sqlite-vec native extension is loaded first — the file itself is a standard SQLite database.
+
+**What you can read without the extension:**
+
+The `sync_metadata` table is a plain EF Core table and opens in any browser:
+
+```bash
+sqlite3 ~/.local/share/bookstack-mcp/bookstack-vectors.db "SELECT * FROM sync_metadata;"
+```
+
+**DB Browser for SQLite — loading the extension:**
+
+1. Find the sqlite-vec native library alongside the server binary (e.g. in `publish-local/` or next to the extension binary):
+   ```bash
+   find ~/.local/share/bookstack-mcp -name "*.so" 2>/dev/null
+   find "$(dirname $(which bookstack-mcp-server))" -name "*vec*" 2>/dev/null
+   ```
+2. In DB Browser for SQLite: **Edit → Preferences → Extensions → Add**, paste the `.so` / `.dll` path, click OK.
+3. Re-open the database — the `vec0` virtual table will be recognised.
+
+You can also use **Tools → Load Extension** (available in most builds) to load it on the fly for a single session.
+
 ---
 
 ## Scoped Access

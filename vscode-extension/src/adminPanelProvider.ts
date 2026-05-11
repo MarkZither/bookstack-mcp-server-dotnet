@@ -64,7 +64,7 @@ export class AdminPanelProvider implements vscode.Disposable {
         this.renderHtml(status, unreachable);
     }
 
-    private async handleMessage(msg: { command: string; url?: string }): Promise<void> {
+    private async handleMessage(msg: { command: string; url?: string; path?: string }): Promise<void> {
         if (msg.command === 'syncNow') {
             this.statusBarManager.setSyncing();
             const result = await this.client.postSync();
@@ -91,6 +91,11 @@ export class AdminPanelProvider implements vscode.Disposable {
             } else {
                 void this.panel?.webview.postMessage({ command: 'indexError', message: `Error: ${result.message}` });
             }
+        } else if (msg.command === 'revealDbFile') {
+            const path = msg.path?.trim() ?? '';
+            if (path) {
+                void vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(path));
+            }
         }
     }
 
@@ -110,12 +115,16 @@ function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable
     const lastSync = status?.lastSyncTime
         ? new Date(status.lastSyncTime).toUTCString()
         : '\u2014';
+    const dbPathRow = status?.sqliteDbPath
+        ? `<tr><th>SQLite DB</th><td><a href="#" id="dbPathLink" data-path="${status.sqliteDbPath.replace(/"/g, '&quot;')}">${status.sqliteDbPath}</a></td></tr>`
+        : '';
     const statsHtml = unreachable || !status
         ? `<p class="warning">&#9888; Admin sidecar unreachable on port <a href="#" id="openSettingsLink"><code>${adminPort}</code></a>. The MCP server may not be running, or port ${adminPort} is in use by another process.</p>`
         : `<table>
              <tr><th>Total Pages</th><td id="totalPages">${status.totalPages}</td></tr>
              <tr><th>Last Sync</th><td id="lastSync">${lastSync}</td></tr>
              <tr><th>Pending</th><td id="pending">${status.pendingCount}</td></tr>
+             ${dbPathRow}
            </table>`;
     const controlsDisabled = unreachable || !status ? 'disabled' : '';
 
@@ -160,6 +169,11 @@ function buildWebviewHtml(nonce: string, status: AdminStatus | null, unreachable
     document.getElementById('openSettingsLink')?.addEventListener('click', e => {
       e.preventDefault();
       vscode.postMessage({ command: 'openSettings' });
+    });
+    document.getElementById('dbPathLink')?.addEventListener('click', e => {
+      e.preventDefault();
+      const path = e.currentTarget.dataset.path;
+      if (path) { vscode.postMessage({ command: 'revealDbFile', path }); }
     });
     document.getElementById('syncBtn').addEventListener('click', () => {
       vscode.postMessage({ command: 'syncNow' });

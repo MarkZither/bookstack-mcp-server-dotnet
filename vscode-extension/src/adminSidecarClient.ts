@@ -2,6 +2,7 @@ export interface AdminStatus {
     totalPages: number;
     lastSyncTime: string | null;
     pendingCount: number;
+    sqliteDbPath: string | null;
 }
 
 export interface AdminAccepted {

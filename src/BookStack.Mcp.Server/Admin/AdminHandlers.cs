@@ -1,6 +1,7 @@
 using BookStack.Mcp.Server.Config;
 using BookStack.Mcp.Server.Data.Abstractions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace BookStack.Mcp.Server.Admin;
@@ -10,12 +11,13 @@ internal static class AdminHandlers
     internal static async Task<IResult> GetStatusAsync(
         IVectorStore vectorStore,
         IAdminTaskQueue queue,
+        [FromServices] SqliteVectorDbPath? sqliteDbPath,
         CancellationToken ct)
     {
         var totalPages = await vectorStore.GetTotalCountAsync(ct).ConfigureAwait(false);
         var lastSync = await vectorStore.GetLastSyncAtAsync(ct).ConfigureAwait(false);
         var lastSyncTime = lastSync?.ToString("o");
-        return Results.Ok(new AdminStatusResponse(totalPages, lastSyncTime, queue.PendingCount));
+        return Results.Ok(new AdminStatusResponse(totalPages, lastSyncTime, queue.PendingCount, sqliteDbPath?.Value));
     }
 
     internal static async Task<IResult> PostSyncAsync(

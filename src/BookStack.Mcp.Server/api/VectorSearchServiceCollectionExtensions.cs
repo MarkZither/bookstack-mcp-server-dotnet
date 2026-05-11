@@ -95,6 +95,8 @@ public static class VectorSearchServiceCollectionExtensions
         {
             // Default: Sqlite
             services.AddSqliteVectorStore(connectionString);
+            var dataSource = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString).DataSource;
+            services.AddSingleton(new Config.SqliteVectorDbPath(dataSource));
         }
     }
 

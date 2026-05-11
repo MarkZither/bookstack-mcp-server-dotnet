@@ -1,6 +1,6 @@
 namespace BookStack.Mcp.Server.Admin;
 
-internal sealed record AdminStatusResponse(int TotalPages, string? LastSyncTime, int PendingCount);
+internal sealed record AdminStatusResponse(int TotalPages, string? LastSyncTime, int PendingCount, string? SqliteDbPath = null);
 
 internal sealed record AdminAcceptedResponse(string Status = "accepted");
 

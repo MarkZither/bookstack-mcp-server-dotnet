@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-05-11
+
+### Added
+
+- **Admin Panel — SQLite DB path**: when vector search is enabled with the SQLite provider the
+  Admin Panel now shows the resolved database file path with a link that reveals it in the OS file
+  manager. Path is `~/.local/share/bookstack-mcp/bookstack-vectors.db` on Linux/macOS and
+  `%LOCALAPPDATA%\bookstack-mcp\bookstack-vectors.db` on Windows.
+- **README — browsing the SQLite database**: documented the sqlite-vec virtual table constraint
+  and how to load the native extension into DB Browser for SQLite so the database can be
+  inspected with a GUI tool.
+
 ## [0.3.2] - 2026-05-04
 
 ### Fixed
