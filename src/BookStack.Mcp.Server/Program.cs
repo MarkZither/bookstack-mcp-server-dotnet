@@ -226,13 +226,13 @@ static Dictionary<string, string?> MapBookStackEnvVars()
     AddScopeEntries(map, "BOOKSTACK_SCOPED_SHELVES", "BookStack:ScopedShelves");
 
     // Vector search settings — all optional; appsettings.json provides defaults.
-    MapOptional(map, "BOOKSTACK_VECTOR_ENABLED",          "VectorSearch:Enabled");
-    MapOptional(map, "BOOKSTACK_VECTOR_DATABASE",         "VectorSearch:Database");
-    MapOptional(map, "BOOKSTACK_VECTOR_PROVIDER",         "VectorSearch:EmbeddingProvider");
-    MapOptional(map, "BOOKSTACK_VECTOR_OLLAMA_URL",       "VectorSearch:Ollama:BaseUrl");
-    MapOptional(map, "BOOKSTACK_VECTOR_OLLAMA_MODEL",     "VectorSearch:Ollama:Model");
-    MapOptional(map, "BOOKSTACK_VECTOR_CONNECTION",       "ConnectionStrings:VectorDb");
-    MapOptional(map, "BOOKSTACK_ADMIN_PORT",              "BOOKSTACK_ADMIN_PORT");
+    MapOptional(map, "BOOKSTACK_VECTOR_ENABLED", "VectorSearch:Enabled");
+    MapOptional(map, "BOOKSTACK_VECTOR_DATABASE", "VectorSearch:Database");
+    MapOptional(map, "BOOKSTACK_VECTOR_PROVIDER", "VectorSearch:EmbeddingProvider");
+    MapOptional(map, "BOOKSTACK_VECTOR_OLLAMA_URL", "VectorSearch:Ollama:BaseUrl");
+    MapOptional(map, "BOOKSTACK_VECTOR_OLLAMA_MODEL", "VectorSearch:Ollama:Model");
+    MapOptional(map, "BOOKSTACK_VECTOR_CONNECTION", "ConnectionStrings:VectorDb");
+    MapOptional(map, "BOOKSTACK_ADMIN_PORT", "BOOKSTACK_ADMIN_PORT");
 
     return map;
 }
