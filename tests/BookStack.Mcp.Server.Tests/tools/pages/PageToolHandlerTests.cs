@@ -34,7 +34,7 @@ public sealed class PageToolHandlerTests
     public async Task CreatePageAsync_WithBookId_CallsClientWithCorrectRequest()
     {
         _client.Setup(c => c.CreatePageAsync(It.IsAny<CreatePageRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Page { Id = 5, BookId = 3 });
+            .ReturnsAsync(new PageWithContent { Id = 5, BookId = 3 });
 
         var result = await _handler.CreatePageAsync("Page1", bookId: 3).ConfigureAwait(false);
 
@@ -50,7 +50,7 @@ public sealed class PageToolHandlerTests
     public async Task CreatePageAsync_WithMarkdown_SetsMarkdownField()
     {
         _client.Setup(c => c.CreatePageAsync(It.IsAny<CreatePageRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Page { Id = 6 });
+            .ReturnsAsync(new PageWithContent { Id = 6 });
 
         await _handler.CreatePageAsync("Md Page", chapterId: 1, markdown: "# Hello").ConfigureAwait(false);
 

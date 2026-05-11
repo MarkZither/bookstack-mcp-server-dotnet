@@ -4,7 +4,8 @@ export default tseslint.config(
     ...tseslint.configs.recommended,
     {
         rules: {
-            'no-console': 'error'
+            'no-console': 'error',
+            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
         }
     }
 );
