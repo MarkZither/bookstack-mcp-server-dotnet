@@ -7,7 +7,7 @@ namespace BookStack.Mcp.Server.Data.Postgres;
 
 public sealed class PgVectorStore : IVectorStore
 {
-    private const string _lastSyncKey = "last_sync_at";
+    private const string LastSyncKey = "last_sync_at";
 
     private readonly IDbContextFactory<VectorDbContext> _factory;
 
@@ -103,7 +103,7 @@ public sealed class PgVectorStore : IVectorStore
 #pragma warning disable CA2007
         await using var db = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
-        var row = await db.SyncMetadata.FirstOrDefaultAsync(r => r.Key == _lastSyncKey, cancellationToken).ConfigureAwait(false);
+        var row = await db.SyncMetadata.FirstOrDefaultAsync(r => r.Key == LastSyncKey, cancellationToken).ConfigureAwait(false);
         if (row is null || !DateTimeOffset.TryParse(row.Value, out var ts))
         {
             return null;
@@ -117,10 +117,10 @@ public sealed class PgVectorStore : IVectorStore
 #pragma warning disable CA2007
         await using var db = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
-        var row = await db.SyncMetadata.FirstOrDefaultAsync(r => r.Key == _lastSyncKey, cancellationToken).ConfigureAwait(false);
+        var row = await db.SyncMetadata.FirstOrDefaultAsync(r => r.Key == LastSyncKey, cancellationToken).ConfigureAwait(false);
         if (row is null)
         {
-            db.SyncMetadata.Add(new SyncMetadataRecord { Key = _lastSyncKey, Value = timestamp.ToString("O") });
+            db.SyncMetadata.Add(new SyncMetadataRecord { Key = LastSyncKey, Value = timestamp.ToString("O") });
         }
         else
         {
