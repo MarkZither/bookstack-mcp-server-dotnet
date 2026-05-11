@@ -103,9 +103,9 @@ public sealed class BookStackApiClientTests
                         "description_html": "<p>A test.</p>",
                         "created_at": "2024-01-01T00:00:00Z",
                         "updated_at": "2024-01-02T00:00:00Z",
-                        "created_by": {"id": 1, "name": "Admin", "slug": "admin"},
-                        "updated_by": {"id": 1, "name": "Admin", "slug": "admin"},
-                        "owned_by": {"id": 1, "name": "Admin", "slug": "admin"},
+                        "created_by": 1,
+                        "updated_by": 1,
+                        "owned_by": 1,
                         "tags": []
                     }
                 ],
@@ -138,9 +138,9 @@ public sealed class BookStackApiClientTests
                 "slug": "my-book",
                 "created_at": "2024-01-01T00:00:00Z",
                 "updated_at": "2024-01-01T00:00:00Z",
-                "created_by": {"id": 1, "name": "Admin", "slug": "admin"},
-                "updated_by": {"id": 1, "name": "Admin", "slug": "admin"},
-                "owned_by": {"id": 1, "name": "Admin", "slug": "admin"},
+                "created_by": 1,
+                "updated_by": 1,
+                "owned_by": 1,
                 "tags": [],
                 "contents": []
             }
@@ -180,9 +180,9 @@ public sealed class BookStackApiClientTests
                 "slug": "book",
                 "created_at": "2024-01-01T00:00:00Z",
                 "updated_at": "2024-01-01T00:00:00Z",
-                "created_by": {"id": 1, "name": "Admin", "slug": "admin"},
-                "updated_by": {"id": 1, "name": "Admin", "slug": "admin"},
-                "owned_by": {"id": 1, "name": "Admin", "slug": "admin"},
+                "created_by": 1,
+                "updated_by": 1,
+                "owned_by": 1,
                 "tags": [],
                 "contents": []
             }
