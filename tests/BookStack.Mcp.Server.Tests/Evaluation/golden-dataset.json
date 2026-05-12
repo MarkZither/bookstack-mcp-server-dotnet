@@ -1,0 +1,122 @@
+[
+  {
+    "query": "what is bookstack",
+    "expected_page_slug": "introduction-to-bookstack",
+    "notes": "short summary — WYSIWYG"
+  },
+  {
+    "query": "overview of bookstack knowledge management platform",
+    "expected_page_slug": "introduction-to-bookstack",
+    "notes": "short summary — WYSIWYG"
+  },
+  {
+    "query": "how to get started with bookstack",
+    "expected_page_slug": "quick-start-guide",
+    "notes": "short summary — WYSIWYG"
+  },
+  {
+    "query": "bookstack docker compose quick start",
+    "expected_page_slug": "quick-start-guide",
+    "notes": "short summary — WYSIWYG"
+  },
+  {
+    "query": "bookstack features list",
+    "expected_page_slug": "bookstack-feature-overview",
+    "notes": "short summary — WYSIWYG"
+  },
+  {
+    "query": "what features does bookstack have",
+    "expected_page_slug": "bookstack-feature-overview",
+    "notes": "short summary — WYSIWYG"
+  },
+  {
+    "query": "install bookstack ubuntu step by step",
+    "expected_page_slug": "installing-bookstack-on-ubuntu",
+    "notes": "long procedural — Markdown"
+  },
+  {
+    "query": "bookstack ubuntu server installation guide",
+    "expected_page_slug": "installing-bookstack-on-ubuntu",
+    "notes": "long procedural — Markdown"
+  },
+  {
+    "query": "configure ldap with bookstack",
+    "expected_page_slug": "configuring-ldap-authentication",
+    "notes": "long procedural — Markdown"
+  },
+  {
+    "query": "ldap active directory authentication bookstack env variables",
+    "expected_page_slug": "configuring-ldap-authentication",
+    "notes": "long procedural — Markdown"
+  },
+  {
+    "query": "bookstack email smtp configuration",
+    "expected_page_slug": "setting-up-email-notifications",
+    "notes": "long procedural — Markdown"
+  },
+  {
+    "query": "how to set up email notifications in bookstack",
+    "expected_page_slug": "setting-up-email-notifications",
+    "notes": "long procedural — Markdown"
+  },
+  {
+    "query": "recommended php ini settings for bookstack",
+    "expected_page_slug": "php-configuration-for-bookstack",
+    "notes": "code-heavy — Markdown"
+  },
+  {
+    "query": "php fpm pool configuration bookstack",
+    "expected_page_slug": "php-configuration-for-bookstack",
+    "notes": "code-heavy — Markdown"
+  },
+  {
+    "query": "nginx proxy pass bookstack configuration",
+    "expected_page_slug": "nginx-reverse-proxy-configuration",
+    "notes": "code-heavy — Markdown"
+  },
+  {
+    "query": "nginx virtual host server block for bookstack",
+    "expected_page_slug": "nginx-reverse-proxy-configuration",
+    "notes": "code-heavy — Markdown"
+  },
+  {
+    "query": "create mysql database for bookstack",
+    "expected_page_slug": "mysql-database-setup",
+    "notes": "code-heavy — Markdown"
+  },
+  {
+    "query": "bookstack database user permissions mysql grant",
+    "expected_page_slug": "mysql-database-setup",
+    "notes": "code-heavy — Markdown"
+  },
+  {
+    "query": "bookstack system architecture components diagram",
+    "expected_page_slug": "system-architecture-overview",
+    "notes": "multi-topic with DrawIO — WYSIWYG"
+  },
+  {
+    "query": "bookstack mcp server integration architecture",
+    "expected_page_slug": "system-architecture-overview",
+    "notes": "multi-topic with DrawIO — WYSIWYG"
+  },
+  {
+    "query": "bookstack api token authentication header",
+    "expected_page_slug": "api-authentication-methods",
+    "notes": "multi-topic — WYSIWYG"
+  },
+  {
+    "query": "how to authenticate requests to bookstack rest api",
+    "expected_page_slug": "api-authentication-methods",
+    "notes": "multi-topic — WYSIWYG"
+  },
+  {
+    "query": "bookstack user roles permissions rbac",
+    "expected_page_slug": "user-roles-and-permissions",
+    "notes": "multi-topic — WYSIWYG"
+  },
+  {
+    "query": "per entity permissions override bookstack",
+    "expected_page_slug": "user-roles-and-permissions",
+    "notes": "multi-topic — WYSIWYG"
+  }
+]

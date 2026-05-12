@@ -27,11 +27,11 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3
 **Refs**: Req 1, 2
 
-- [ ] Add at least 3 WYSIWYG-editor pages (`Editor = "wysiwyg"`) to `scripts/Seed-BookStack.ps1`
-- [ ] Add at least 3 Markdown-editor pages (`Editor = "markdown"`) to `scripts/Seed-BookStack.ps1`
-- [ ] Add at least 1 page containing a DrawIO diagram block to `scripts/Seed-BookStack.ps1`
-- [ ] Create `tests/BookStack.Mcp.Server.Tests/Evaluation/golden-dataset.json` with ≥ 20 `{ query, expected_page_slug }` pairs covering short, long, code-heavy, and multi-topic pages
-- [ ] Document the DrawIO HTML structure observed in the raw `Html` API response (comment in seed script or in `docs/features/semantic-search-chunking/drawio-html-notes.md`)
+- [x] Add at least 3 WYSIWYG-editor pages (`Editor = "wysiwyg"`) to `scripts/Seed-BookStack.ps1`
+- [x] Add at least 3 Markdown-editor pages (`Editor = "markdown"`) to `scripts/Seed-BookStack.ps1`
+- [x] Add at least 1 page containing a DrawIO diagram block to `scripts/Seed-BookStack.ps1`
+- [x] Create `tests/BookStack.Mcp.Server.Tests/Evaluation/golden-dataset.json` with ≥ 20 `{ query, expected_page_slug }` pairs covering short, long, code-heavy, and multi-topic pages
+- [x] Document the DrawIO HTML structure observed in the raw `Html` API response (comment in seed script or in `docs/features/semantic-search-chunking/drawio-html-notes.md`)
 
 ---
 
