@@ -6,7 +6,7 @@ public sealed record GoldenDatasetEntry(
     string Expected_Page_Slug,
     string? Notes = null);
 
-// Refs: FEAT-0060 Phase 3 — Req 4 (populated in Phase 3 #103)
+// Refs: FEAT-0060 Phase 3 — Req 4
 public sealed record QueryResult(
     string Query,
     string Expected_Page_Slug,
@@ -16,3 +16,8 @@ public sealed record RankedPage(
     string PageSlug,
     float Score,
     int Rank);
+
+// Refs: FEAT-0060 Phase 3 — Req 5
+public sealed record ScoreHistogram(
+    IReadOnlyDictionary<string, int> CorrectBuckets,
+    IReadOnlyDictionary<string, int> IncorrectBuckets);
