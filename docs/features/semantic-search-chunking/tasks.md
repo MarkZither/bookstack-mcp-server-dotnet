@@ -41,10 +41,10 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3
 **Depends on**: Phase 1
 
-- [ ] Create `tests/BookStack.Mcp.Server.Evaluation/BookStack.Mcp.Server.Evaluation.csproj` (TUnit test project or .NET console, referencing `golden-dataset.json` as embedded resource)
-- [ ] Add project to `BookStack.Mcp.Server.sln`
-- [ ] Create `tests/BookStack.Mcp.Server.Evaluation/EvaluationHarness.cs` skeleton with configuration loading (`BookStackBaseUrl`, `ApiToken`, `VectorSearch:*`) from environment variables / `appsettings.Evaluation.json`
-- [ ] Verify `dotnet run` / `dotnet test` executes against a dev BookStack instance without code changes (AC from spec)
+- [x] Create `tests/BookStack.Mcp.Server.Evaluation/BookStack.Mcp.Server.Evaluation.csproj` (TUnit test project or .NET console, referencing `golden-dataset.json` as embedded resource)
+- [x] Add project to `BookStack.Mcp.Server.sln`
+- [x] Create `tests/BookStack.Mcp.Server.Evaluation/EvaluationHarness.cs` skeleton with configuration loading (`BookStackBaseUrl`, `ApiToken`, `VectorSearch:*`) from environment variables / `appsettings.Evaluation.json`
+- [x] Verify `dotnet run` / `dotnet test` executes against a dev BookStack instance without code changes (AC from spec)
 
 ---
 
