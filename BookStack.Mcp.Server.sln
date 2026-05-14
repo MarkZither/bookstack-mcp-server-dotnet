@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookStack.Mcp.Server.Tests", "tests\BookStack.Mcp.Server.Tests\BookStack.Mcp.Server.Tests.csproj", "{A5E2AD5D-5403-480D-A0CE-1F322DAF59ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookStack.Mcp.Server.Evaluation", "tests\BookStack.Mcp.Server.Evaluation\BookStack.Mcp.Server.Evaluation.csproj", "{26794CD5-017C-4CCE-8D21-FDD76395FCCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,18 @@ Global
 		{A5E2AD5D-5403-480D-A0CE-1F322DAF59ED}.Release|x64.Build.0 = Release|Any CPU
 		{A5E2AD5D-5403-480D-A0CE-1F322DAF59ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5E2AD5D-5403-480D-A0CE-1F322DAF59ED}.Release|x86.Build.0 = Release|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Debug|x64.Build.0 = Debug|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Debug|x86.Build.0 = Debug|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Release|x64.ActiveCfg = Release|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Release|x64.Build.0 = Release|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Release|x86.ActiveCfg = Release|Any CPU
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +126,6 @@ Global
 		{FA58DBFC-1A4A-4859-8E02-F9B3E5FCC024} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{26594FAE-849E-4CF4-937A-E07DB72FA569} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{A5E2AD5D-5403-480D-A0CE-1F322DAF59ED} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{26794CD5-017C-4CCE-8D21-FDD76395FCCA} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
