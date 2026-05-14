@@ -54,12 +54,12 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3
 **Depends on**: Phase 2
 
-- [ ] Implement `EvaluationHarness.TriggerFullSyncAndWaitAsync()` — calls `VectorIndexSyncService` via MCP tool or direct DI and polls until sync completes
-- [ ] Implement `EvaluationHarness.RunQueriesAsync()` — calls `bookstack_semantic_search` for each golden-dataset query, records ranked result lists
-- [ ] Implement `MetricsCalculator.ComputeRecallAtK(results, k)` → `float`
-- [ ] Implement `MetricsCalculator.ComputeMRR(results)` → `float`
-- [ ] Implement `MetricsCalculator.ComputeScoreHistogram(results)` — buckets for correct vs. incorrect hits
-- [ ] Add unit tests for `MetricsCalculator` using synthetic result fixtures in `tests/BookStack.Mcp.Server.Tests/Evaluation/MetricsCalculatorTests.cs`
+- [x] Implement `EvaluationHarness.TriggerFullSyncAndWaitAsync()` — calls `VectorIndexSyncService` via MCP tool or direct DI and polls until sync completes
+- [x] Implement `EvaluationHarness.RunQueriesAsync()` — calls `bookstack_semantic_search` for each golden-dataset query, records ranked result lists
+- [x] Implement `MetricsCalculator.ComputeRecallAtK(results, k)` → `float`
+- [x] Implement `MetricsCalculator.ComputeMRR(results)` → `float`
+- [x] Implement `MetricsCalculator.ComputeScoreHistogram(results)` — buckets for correct vs. incorrect hits
+- [x] Add unit tests for `MetricsCalculator` using synthetic result fixtures in `tests/BookStack.Mcp.Server.Tests/Evaluation/MetricsCalculatorTests.cs`
 
 ---
 
