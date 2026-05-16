@@ -21,3 +21,21 @@ public sealed record RankedPage(
 public sealed record ScoreHistogram(
     IReadOnlyDictionary<string, int> CorrectBuckets,
     IReadOnlyDictionary<string, int> IncorrectBuckets);
+
+// Refs: FEAT-0060 Phase 4 — Req 1, 2
+public sealed record MetricVerdict(
+    string Name,
+    float Value,
+    string Verdict,
+    float PassThreshold,
+    float InvestigateThreshold);
+
+// Refs: FEAT-0060 Phase 4 — Req 1, 2
+public sealed record EvaluationResult(
+    float RecallAt1,
+    float RecallAt3,
+    float Mrr,
+    ScoreHistogram ScoreHistogram,
+    IReadOnlyList<MetricVerdict> MetricVerdicts,
+    string OverallVerdict,
+    IReadOnlyList<QueryResult> QueryResults);

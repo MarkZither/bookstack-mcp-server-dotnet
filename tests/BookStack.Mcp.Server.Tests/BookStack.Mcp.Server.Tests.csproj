@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\BookStack.Mcp.Server\BookStack.Mcp.Server.csproj" />
     <ProjectReference Include="..\..\src\BookStack.Mcp.Server.Data.Abstractions\BookStack.Mcp.Server.Data.Abstractions.csproj" />
-    <ProjectReference Include="..\BookStack.Mcp.Server.Evaluation\BookStack.Mcp.Server.Evaluation.csproj" />
+    <ProjectReference Include="..\..\src\BookStack.Mcp.Server.Evaluation\BookStack.Mcp.Server.Evaluation.csproj" />
   </ItemGroup>
 
 </Project>

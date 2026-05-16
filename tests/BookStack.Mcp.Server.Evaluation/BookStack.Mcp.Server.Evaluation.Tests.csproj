@@ -5,15 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <RootNamespace>BookStack.Mcp.Server.Evaluation</RootNamespace>
+    <RootNamespace>BookStack.Mcp.Server.Evaluation.Tests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\BookStack.Mcp.Server.Tests\Evaluation\golden-dataset.json"
-                      LogicalName="golden-dataset.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="appsettings.Evaluation.json" CopyToOutputDirectory="PreserveNewest" />
@@ -25,6 +20,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.*" />
     <PackageReference Include="TUnit" Version="1.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BookStack.Mcp.Server.Evaluation\BookStack.Mcp.Server.Evaluation.csproj" />
   </ItemGroup>
 
 </Project>

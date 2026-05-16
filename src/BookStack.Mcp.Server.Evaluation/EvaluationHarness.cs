@@ -18,34 +18,12 @@ public sealed class EvaluationHarness
             .Build();
     }
 
-    [Test]
-    public async Task Configuration_LoadsRequiredSettings()
-    {
-        var baseUrl = _configuration["BookStackBaseUrl"];
-        var apiToken = _configuration["ApiToken"];
-
-        if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiToken))
-        {
-            Skip.Test(
-                "BookStackBaseUrl and ApiToken must be set via environment variables or appsettings.Evaluation.json.");
-        }
-
-        await Assert.That(baseUrl).IsNotNull().And.IsNotEmpty();
-        await Assert.That(apiToken).IsNotNull().And.IsNotEmpty();
-    }
-
-    [Test]
-    public async Task GoldenDataset_LoadsFromEmbeddedResource()
-    {
-        var dataset = LoadGoldenDataset();
-
-        await Assert.That(dataset).IsNotEmpty();
-    }
+    public IConfiguration Configuration => _configuration;
 
     // Refs: FEAT-0060 Phase 3 — Req 3
     // Enqueues a full vector index sync via the admin HTTP endpoint, then polls
     // GET /admin/status until pendingCount reaches 0.
-    internal async Task TriggerFullSyncAndWaitAsync(CancellationToken cancellationToken = default)
+    public async Task TriggerFullSyncAndWaitAsync(CancellationToken cancellationToken = default)
     {
         var adminBaseUrl = _configuration["AdminBaseUrl"]
             ?? throw new InvalidOperationException(
@@ -77,7 +55,7 @@ public sealed class EvaluationHarness
 
     // Refs: FEAT-0060 Phase 3 — Req 4
     // Calls bookstack_semantic_search for each entry in the golden dataset and records ranked results.
-    internal async Task<IReadOnlyList<QueryResult>> RunQueriesAsync(
+    public async Task<IReadOnlyList<QueryResult>> RunQueriesAsync(
         IReadOnlyList<GoldenDatasetEntry> dataset,
         CancellationToken cancellationToken = default)
     {
@@ -101,7 +79,7 @@ public sealed class EvaluationHarness
         return results.AsReadOnly();
     }
 
-    internal static IReadOnlyList<GoldenDatasetEntry> LoadGoldenDataset()
+    public static IReadOnlyList<GoldenDatasetEntry> LoadGoldenDataset()
     {
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream("golden-dataset.json")
@@ -118,4 +96,3 @@ public sealed class EvaluationHarness
 
     private sealed record AdminStatus(int TotalPages, string? LastSyncTime, int PendingCount);
 }
-

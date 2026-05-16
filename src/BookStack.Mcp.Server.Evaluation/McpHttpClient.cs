@@ -7,7 +7,7 @@ namespace BookStack.Mcp.Server.Evaluation;
 // Refs: FEAT-0060 Phase 3 — Req 4
 // Minimal MCP Streamable HTTP client for the evaluation harness.
 // Handles both application/json and text/event-stream (SSE) responses.
-internal sealed class McpHttpClient : IDisposable
+public sealed class McpHttpClient : IDisposable
 {
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -17,7 +17,7 @@ internal sealed class McpHttpClient : IDisposable
     private readonly HttpClient _http;
     private int _nextId = 1;
 
-    internal McpHttpClient(string mcpBaseUrl, string? authToken = null)
+    public McpHttpClient(string mcpBaseUrl, string? authToken = null)
     {
         _http = new HttpClient
         {
@@ -40,7 +40,7 @@ internal sealed class McpHttpClient : IDisposable
     /// Calls <c>bookstack_semantic_search</c> and returns the ranked page slugs with scores.
     /// Slug is extracted from the page URL (last path segment).
     /// </summary>
-    internal async Task<IReadOnlyList<RankedPage>> CallSemanticSearchAsync(
+    public async Task<IReadOnlyList<RankedPage>> CallSemanticSearchAsync(
         string query,
         int topN,
         CancellationToken ct)
