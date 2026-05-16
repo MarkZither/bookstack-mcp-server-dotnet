@@ -37,7 +37,7 @@ jobs:
         run: dotnet build src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj --configuration Release --no-restore
+        run: dotnet test --project tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj --configuration Release --no-restore
 
       - name: Pack
         run: dotnet pack src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj --configuration Release --no-build -o artifacts
