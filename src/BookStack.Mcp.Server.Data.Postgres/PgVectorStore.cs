@@ -21,13 +21,15 @@ public sealed class PgVectorStore : IVectorStore
 #pragma warning disable CA2007
         await using var db = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
-        var existing = await db.PageVectors.FindAsync([entry.PageId], cancellationToken).ConfigureAwait(false);
+        var existing = await db.PageVectors.FindAsync([entry.PageId, entry.ChunkIndex], cancellationToken).ConfigureAwait(false);
         if (existing is null)
         {
             db.PageVectors.Add(MapToRecord(entry, vector));
         }
         else
         {
+            existing.ChunkIndex = entry.ChunkIndex;
+            existing.TotalChunks = entry.TotalChunks;
             existing.Slug = entry.Slug;
             existing.Title = entry.Title;
             existing.Url = entry.Url;
@@ -53,10 +55,10 @@ public sealed class PgVectorStore : IVectorStore
 
         var rows = await db.PageVectors
             .OrderBy(p => p.Embedding!.CosineDistance(query))
-            .Take(topN)
             .Select(p => new
             {
                 p.PageId,
+                p.ChunkIndex,
                 p.Title,
                 p.Url,
                 p.Excerpt,
@@ -65,25 +67,37 @@ public sealed class PgVectorStore : IVectorStore
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return rows
+        var deduped = rows
             .Where(r => r.Score >= minScore)
+            .GroupBy(r => r.PageId)
+            .Select(g => g.OrderByDescending(x => x.Score).First())
+            .OrderByDescending(r => r.Score)
+            .Take(topN)
             .Select(r => new VectorSearchResult
             {
                 PageId = r.PageId,
+                ChunkIndex = r.ChunkIndex,
                 Title = r.Title,
                 Url = r.Url,
                 Excerpt = r.Excerpt,
                 Score = r.Score,
             })
             .ToList();
+
+        return deduped;
     }
 
-    public async Task DeleteAsync(int pageId, CancellationToken cancellationToken = default)
+    public async Task DeleteChunksAsync(int pageId, CancellationToken cancellationToken = default)
     {
 #pragma warning disable CA2007
         await using var db = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
         await db.PageVectors.Where(p => p.PageId == pageId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task DeleteAsync(int pageId, CancellationToken cancellationToken = default)
+    {
+        await DeleteChunksAsync(pageId, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<string?> GetContentHashAsync(int pageId, CancellationToken cancellationToken = default)
@@ -142,6 +156,8 @@ public sealed class PgVectorStore : IVectorStore
         new()
         {
             PageId = entry.PageId,
+            ChunkIndex = entry.ChunkIndex,
+            TotalChunks = entry.TotalChunks,
             Slug = entry.Slug,
             Title = entry.Title,
             Url = entry.Url,

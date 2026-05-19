@@ -5,7 +5,16 @@ namespace BookStack.Mcp.Server.Data.Sqlite;
 public sealed class VectorPageRecord
 {
     [VectorStoreKey]
+    public string StorageKey { get; set; } = string.Empty;
+
+    [VectorStoreData]
     public int PageId { get; set; }
+
+    [VectorStoreData]
+    public int ChunkIndex { get; set; }
+
+    [VectorStoreData]
+    public int TotalChunks { get; set; } = 1;
 
     [VectorStoreData]
     public string Slug { get; set; } = string.Empty;

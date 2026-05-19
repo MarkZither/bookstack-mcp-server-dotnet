@@ -67,6 +67,119 @@ public sealed class VectorSearchIntegrationTests
         hashAfter.Should().Be("deadbeef");
     }
 
+    [Test]
+    public async Task InMemoryVectorStore_SearchAsync_DeduplicatesByPageId_UsesHighestScoreChunk()
+    {
+        var store = new InMemoryVectorStore();
+
+        await store.UpsertAsync(
+            new VectorPageEntry
+            {
+                PageId = 10,
+                ChunkIndex = 0,
+                TotalChunks = 2,
+                Title = "Runbook",
+                Url = "http://bs.test/books/ops/pages/runbook",
+                Excerpt = "lower scoring chunk",
+                Slug = "runbook",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                ContentHash = "hash-10",
+            },
+            new float[] { 0.2f, 0.98f, 0f }).ConfigureAwait(false);
+
+        await store.UpsertAsync(
+            new VectorPageEntry
+            {
+                PageId = 10,
+                ChunkIndex = 1,
+                TotalChunks = 2,
+                Title = "Runbook",
+                Url = "http://bs.test/books/ops/pages/runbook",
+                Excerpt = "higher scoring chunk",
+                Slug = "runbook",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                ContentHash = "hash-10",
+            },
+            new float[] { 1f, 0f, 0f }).ConfigureAwait(false);
+
+        await store.UpsertAsync(
+            new VectorPageEntry
+            {
+                PageId = 11,
+                ChunkIndex = 0,
+                TotalChunks = 1,
+                Title = "Other",
+                Url = "http://bs.test/books/ops/pages/other",
+                Excerpt = "other page",
+                Slug = "other",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                ContentHash = "hash-11",
+            },
+            new float[] { 0.9f, 0f, 0f }).ConfigureAwait(false);
+
+        var results = await store.SearchAsync(new float[] { 1f, 0f, 0f }, topN: 10, minScore: 0.0f).ConfigureAwait(false);
+
+        results.Count(r => r.PageId == 10).Should().Be(1);
+        results.Should().Contain(r => r.PageId == 10 && r.ChunkIndex == 1 && r.Excerpt == "higher scoring chunk");
+    }
+
+    [Test]
+    public async Task InMemoryVectorStore_DeleteChunksAsync_RemovesAllChunksForPage()
+    {
+        var store = new InMemoryVectorStore();
+
+        await store.UpsertAsync(
+            new VectorPageEntry
+            {
+                PageId = 20,
+                ChunkIndex = 0,
+                TotalChunks = 2,
+                Title = "Page 20",
+                Url = "http://bs.test/page-20",
+                Excerpt = "chunk 0",
+                Slug = "page-20",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                ContentHash = "hash-20",
+            },
+            new float[] { 1f, 0f, 0f }).ConfigureAwait(false);
+
+        await store.UpsertAsync(
+            new VectorPageEntry
+            {
+                PageId = 20,
+                ChunkIndex = 1,
+                TotalChunks = 2,
+                Title = "Page 20",
+                Url = "http://bs.test/page-20",
+                Excerpt = "chunk 1",
+                Slug = "page-20",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                ContentHash = "hash-20",
+            },
+            new float[] { 0.9f, 0f, 0f }).ConfigureAwait(false);
+
+        await store.UpsertAsync(
+            new VectorPageEntry
+            {
+                PageId = 21,
+                ChunkIndex = 0,
+                TotalChunks = 1,
+                Title = "Page 21",
+                Url = "http://bs.test/page-21",
+                Excerpt = "other page",
+                Slug = "page-21",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                ContentHash = "hash-21",
+            },
+            new float[] { 0.8f, 0f, 0f }).ConfigureAwait(false);
+
+        await store.DeleteChunksAsync(20).ConfigureAwait(false);
+
+        var results = await store.SearchAsync(new float[] { 1f, 0f, 0f }, topN: 10, minScore: 0.0f).ConfigureAwait(false);
+        results.Should().NotContain(r => r.PageId == 20);
+        results.Should().Contain(r => r.PageId == 21);
+    }
+
     // T33 — GetPagesUpdatedSinceAsync sends correct filter query parameter
     [Test]
     public async Task BookStackApiClient_GetPagesUpdatedSinceAsync_SendsCorrectFilterParameter()

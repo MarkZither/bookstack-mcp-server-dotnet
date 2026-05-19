@@ -7,6 +7,8 @@ namespace BookStack.Mcp.Server.Data.Postgres;
 public sealed class VectorPageRecord
 {
     public int PageId { get; set; }
+    public int ChunkIndex { get; set; }
+    public int TotalChunks { get; set; } = 1;
     public string Slug { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
@@ -21,7 +23,7 @@ public sealed class VectorPageRecordConfiguration : IEntityTypeConfiguration<Vec
     public void Configure(EntityTypeBuilder<VectorPageRecord> builder)
     {
         builder.ToTable("page_vectors");
-        builder.HasKey(e => e.PageId);
+        builder.HasKey(e => new { e.PageId, e.ChunkIndex });
         builder.Property(e => e.Slug).HasMaxLength(512);
         builder.Property(e => e.Title).HasMaxLength(512);
         builder.Property(e => e.Url).HasMaxLength(1024);

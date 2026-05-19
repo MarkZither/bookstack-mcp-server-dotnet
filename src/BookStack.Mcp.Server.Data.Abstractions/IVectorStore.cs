@@ -4,6 +4,8 @@ public interface IVectorStore
 {
     Task UpsertAsync(VectorPageEntry entry, ReadOnlyMemory<float> vector, CancellationToken cancellationToken = default);
 
+    Task DeleteChunksAsync(int pageId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<VectorSearchResult>> SearchAsync(
         ReadOnlyMemory<float> queryVector,
         int topN,

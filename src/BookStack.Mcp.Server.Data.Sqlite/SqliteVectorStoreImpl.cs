@@ -1,4 +1,5 @@
 using BookStack.Mcp.Server.Data.Abstractions;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
@@ -10,15 +11,17 @@ public sealed class SqliteVectorStore : IVectorStore
     private const string CollectionName = "page_vectors";
     private const string LastSyncKey = "last_sync_at";
 
-    private readonly SqliteCollection<int, VectorPageRecord> _collection;
+    private readonly SqliteCollection<string, VectorPageRecord> _collection;
     private readonly IDbContextFactory<SyncMetadataDbContext> _metaFactory;
+    private readonly string _connectionString;
 
     public SqliteVectorStore(
         string connectionString,
         IDbContextFactory<SyncMetadataDbContext> metaFactory)
     {
-        _collection = new SqliteCollection<int, VectorPageRecord>(connectionString, CollectionName);
+        _collection = new SqliteCollection<string, VectorPageRecord>(connectionString, CollectionName);
         _metaFactory = metaFactory;
+        _connectionString = connectionString;
     }
 
     public async Task UpsertAsync(VectorPageEntry entry, ReadOnlyMemory<float> vector, CancellationToken cancellationToken = default)
@@ -26,7 +29,10 @@ public sealed class SqliteVectorStore : IVectorStore
         await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
         var record = new VectorPageRecord
         {
+            StorageKey = BuildStorageKey(entry.PageId, entry.ChunkIndex),
             PageId = entry.PageId,
+            ChunkIndex = entry.ChunkIndex,
+            TotalChunks = entry.TotalChunks,
             Slug = entry.Slug,
             Title = entry.Title,
             Url = entry.Url,
@@ -57,6 +63,7 @@ public sealed class SqliteVectorStore : IVectorStore
             results.Add(new VectorSearchResult
             {
                 PageId = r.Record.PageId,
+                ChunkIndex = r.Record.ChunkIndex,
                 Title = r.Record.Title,
                 Url = r.Record.Url,
                 Excerpt = r.Record.Excerpt,
@@ -64,20 +71,61 @@ public sealed class SqliteVectorStore : IVectorStore
             });
         }
 
-        return results;
+        return results
+            .GroupBy(r => r.PageId)
+            .Select(g => g.OrderByDescending(x => x.Score).First())
+            .OrderByDescending(r => r.Score)
+            .Take(topN)
+            .ToList();
+    }
+
+    public async Task DeleteChunksAsync(int pageId, CancellationToken cancellationToken = default)
+    {
+        await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+
+#pragma warning disable CA2007
+        await using var connection = new SqliteConnection(_connectionString);
+#pragma warning restore CA2007
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+        command.CommandText = $"DELETE FROM {CollectionName} WHERE PageId = $pageId";
+        command.Parameters.AddWithValue("$pageId", pageId);
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteAsync(int pageId, CancellationToken cancellationToken = default)
     {
-        await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
-        await _collection.DeleteAsync(pageId, cancellationToken).ConfigureAwait(false);
+        await DeleteChunksAsync(pageId, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<string?> GetContentHashAsync(int pageId, CancellationToken cancellationToken = default)
     {
         await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
-        var record = await _collection.GetAsync(pageId, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return record?.ContentHash;
+        var defaultChunk = await _collection
+            .GetAsync(BuildStorageKey(pageId, 0), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (defaultChunk is not null)
+        {
+            return defaultChunk.ContentHash;
+        }
+
+#pragma warning disable CA2007
+        await using var connection = new SqliteConnection(_connectionString);
+#pragma warning restore CA2007
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+        command.CommandText = $"SELECT ContentHash FROM {CollectionName} WHERE PageId = $pageId ORDER BY ChunkIndex LIMIT 1";
+        command.Parameters.AddWithValue("$pageId", pageId);
+
+        var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        return value as string;
     }
 
     public async Task<DateTimeOffset?> GetLastSyncAtAsync(CancellationToken cancellationToken = default)
@@ -128,4 +176,7 @@ public sealed class SqliteVectorStore : IVectorStore
                 .ConfigureAwait(false),
         };
     }
+
+    private static string BuildStorageKey(int pageId, int chunkIndex)
+        => $"{pageId}:{chunkIndex}";
 }

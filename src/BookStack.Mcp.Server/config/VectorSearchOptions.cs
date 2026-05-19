@@ -1,3 +1,5 @@
+using MarkZither.Rag.Chunking;
+
 namespace BookStack.Mcp.Server.Config;
 
 public sealed class VectorSearchOptions
@@ -13,6 +15,7 @@ public sealed class VectorSearchOptions
     public OllamaEmbeddingOptions Ollama { get; set; } = new();
     public AzureOpenAIEmbeddingOptions AzureOpenAI { get; set; } = new();
     public VectorSyncOptions Sync { get; set; } = new();
+    public ChunkOptions Chunking { get; set; } = new();
 }
 
 public sealed class OllamaEmbeddingOptions
