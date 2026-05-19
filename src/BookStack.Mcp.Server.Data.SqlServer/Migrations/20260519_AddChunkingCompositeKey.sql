@@ -26,7 +26,8 @@ WHERE kc.[type] = 'PK'
 
 IF @pk_name IS NOT NULL
 BEGIN
-    EXEC('ALTER TABLE dbo.page_vectors DROP CONSTRAINT ' + QUOTENAME(@pk_name));
+    DECLARE @drop_pk nvarchar(max) = N'ALTER TABLE dbo.page_vectors DROP CONSTRAINT ' + QUOTENAME(@pk_name);
+    EXEC(@drop_pk);
 END;
 
 ALTER TABLE dbo.page_vectors

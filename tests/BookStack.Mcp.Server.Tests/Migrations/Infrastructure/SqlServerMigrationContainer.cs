@@ -9,7 +9,7 @@ namespace BookStack.Mcp.Server.Tests.Migrations.Infrastructure;
 public sealed class SqlServerMigrationContainer : IAsyncInitializer, IAsyncDisposable
 {
     private readonly MsSqlContainer _container =
-        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
+        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2025-latest").Build();
 
     public string ConnectionString => _container.GetConnectionString();
 
