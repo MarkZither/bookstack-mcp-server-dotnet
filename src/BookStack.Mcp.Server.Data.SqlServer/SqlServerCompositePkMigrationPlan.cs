@@ -11,6 +11,9 @@ public static class SqlServerCompositePkMigrationPlan
 
     public const string TargetMilestoneVersion = "0.5.0";
 
+    public const string MigrationScriptPath =
+        "src/BookStack.Mcp.Server.Data.SqlServer/Migrations/20260519_AddChunkingCompositeKey.sql";
+
     public const string TableName = "page_vectors";
 
     public const string CompositePrimaryKey = "(page_id, chunk_index)";
