@@ -4,9 +4,10 @@
 **Status**: Review
 **Author**: Mark
 **Created**: 2026-05-12
-**Last Updated**: 2026-05-12
+**Last Updated**: 2026-05-19
 **Related ADRs**: [ADR-0015](../../architecture/decisions/ADR-0015-vector-store-abstraction.md),
-[ADR-0016](../../architecture/decisions/ADR-0016-embedding-provider-abstraction.md)
+[ADR-0016](../../architecture/decisions/ADR-0016-embedding-provider-abstraction.md),
+[ADR-0020](../../architecture/decisions/ADR-0020-vector-store-composite-pk-migration.md)
 
 ---
 
@@ -59,7 +60,7 @@ This feature therefore has two phases gated by a quality checkpoint:
 - Semantic chunking (splitting on `<h2>`/`<h3>` headings) — considered as a future variant if
   sliding-window chunking does not meet the thresholds.
 - Changing the embedding provider — `nomic-embed-text` via Ollama remains the default.
-- SQL Server vector store support — not targeted by this feature.
+- SQL Server vector query implementation changes beyond schema parity/tracking — not targeted by this feature.
 - Automated nightly quality regression — out of scope for this iteration; evaluation is run manually
   or in CI against the seeded environment.
 - Multi-modal content (images, attachments) — pages only.
@@ -149,8 +150,10 @@ implemented. If any metric is in "Investigate", Phase 2 MAY be implemented at th
 16. The `VectorSearchOptions` configuration MUST expose `Chunking` (of type `ChunkOptions`) with
     the defaults from the NuGet package. Users who set `Chunking:ChunkSize = 0` get the current
     single-chunk behaviour (no regression for existing deployments).
-17. A database migration MUST be provided for both Postgres and SQLite stores to update the primary
-    key and add the `chunk_index` / `total_chunks` columns.
+17. A database migration MUST be provided for Postgres and SQLite stores to update the primary key
+  and add the `chunk_index` / `total_chunks` columns. SQL Server provider work MUST be explicitly
+  tracked in the same phase so provider parity is not lost when SQL Server vector store support is
+  active.
 
 #### Non-Functional Requirements
 

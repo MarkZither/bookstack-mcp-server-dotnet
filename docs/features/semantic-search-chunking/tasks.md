@@ -16,7 +16,7 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 
 | Decision | Scope | Blocks |
 |----------|-------|--------|
-| Composite PK migration strategy — `(page_id, chunk_index)` across Postgres + SQLite | Cross-cutting | Phase 11 |
+| Composite PK migration strategy — `(page_id, chunk_index)` across Postgres + SQLite + SQL Server tracking | Cross-cutting | Phase 11 |
 | NuGet package repo & versioning — `MarkZither/rag-chunking-dotnet`, multi-target, signing | Cross-cutting | Phase 7 |
 
 ---
@@ -83,7 +83,7 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3 (conditional on Phase 4 gate)
 **Depends on**: Phase 4 gate decision
 
-- [ ] Write `docs/architecture/decisions/ADR-0020-composite-pk-chunk-index.md` covering: rationale for `(page_id, chunk_index)` composite PK, Postgres + SQLite EF Core migration approach, backward compatibility for existing single-chunk rows (`ChunkIndex = 0, TotalChunks = 1`), and rollback strategy
+- [x] Write `docs/architecture/decisions/ADR-0020-vector-store-composite-pk-migration.md` covering: rationale for `(page_id, chunk_index)` composite PK, Postgres + SQLite migration approach, SQL Server provider tracking requirement, backward compatibility for existing single-chunk rows (`ChunkIndex = 0, TotalChunks = 1`), and rollback strategy
 - [ ] Get ADR accepted before any Phase 11 migration code is written
 
 ---
