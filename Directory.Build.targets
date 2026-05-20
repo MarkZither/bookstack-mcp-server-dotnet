@@ -6,7 +6,7 @@
     Skipped when HUSKY=0 (set this in CI or to temporarily bypass).
   -->
   <Target Name="HuskyInstall" AfterTargets="Restore" Condition="'$(HUSKY)' != '0'">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" ContinueOnError="true" />
-    <Exec Command="dotnet husky install" StandardOutputImportance="Low" ContinueOnError="true" />
+    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory)" />
+    <Exec Command="dotnet husky install" StandardOutputImportance="Low" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory)" />
   </Target>
 </Project>
