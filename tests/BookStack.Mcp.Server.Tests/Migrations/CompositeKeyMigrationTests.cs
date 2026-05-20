@@ -1,13 +1,10 @@
 #pragma warning disable CA2007
 
+using BookStack.Mcp.Server.Tests.Migrations.Infrastructure;
 using FluentAssertions;
-
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-
 using Npgsql;
-
-using BookStack.Mcp.Server.Tests.Migrations.Infrastructure;
 
 namespace BookStack.Mcp.Server.Tests.Migrations;
 
