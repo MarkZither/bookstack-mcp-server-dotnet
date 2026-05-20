@@ -242,10 +242,27 @@ HTTP transport exposes a Streamable HTTP MCP endpoint at `/mcp` and a health che
 ## Development
 
 ```bash
-dotnet build
+dotnet build          # also auto-wires the pre-commit hook (first run)
 dotnet test --configuration Release
-dotnet format --verify-no-changes
+dotnet format         # fix any formatting issues before committing
 ```
+
+### Pre-commit hook
+
+Formatting is enforced by a git hook in [`.githooks/pre-commit`](.githooks/pre-commit).
+It runs `dotnet format --verify-no-changes` on every `git commit` and blocks the commit if issues are found.
+
+The hook is **automatically activated** the first time you run `dotnet build` or `dotnet restore`.
+[`Directory.Build.targets`](Directory.Build.targets) runs `git config core.hooksPath .githooks` via MSBuild — no manual setup required.
+
+This does **not** use Husky.net; it is a plain POSIX shell script (`#!/bin/sh`).
+
+| Platform | Requirement |
+|----------|-------------|
+| Linux / macOS | Works out of the box — `sh` is available everywhere |
+| Windows | Requires [Git for Windows](https://git-scm.com/download/win) (Git Bash) — Git uses the bundled `sh.exe` to run hook scripts |
+
+If the hook blocks your commit, run `dotnet format`, re-stage the changed files, then commit again.
 
 See [docs/](docs/) for architecture decisions, feature specs, and migration guides.
 
