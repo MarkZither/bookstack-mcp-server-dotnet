@@ -7,7 +7,8 @@
 **Last Updated**: 2026-05-19
 **Related ADRs**: [ADR-0015](../../architecture/decisions/ADR-0015-vector-store-abstraction.md),
 [ADR-0016](../../architecture/decisions/ADR-0016-embedding-provider-abstraction.md),
-[ADR-0020](../../architecture/decisions/ADR-0020-vector-store-composite-pk-migration.md)
+[ADR-0020](../../architecture/decisions/ADR-0020-vector-store-composite-pk-migration.md),
+[ADR-0021](../../architecture/decisions/ADR-0021-rag-chunking-nuget-package.md)
 
 ---
 
