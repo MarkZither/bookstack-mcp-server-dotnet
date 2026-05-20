@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Automatically configure git to use .githooks/ on every restore or build.
+    This ensures the pre-commit hook (dotnet format) is active for every
+    developer without any manual setup step. Skipped in CI (CI env var is set).
+  -->
+  <Target Name="ConfigureGitHooks" AfterTargets="Restore" Condition="'$(CI)' == ''">
+    <Exec Command="git config core.hooksPath .githooks" ContinueOnError="true" />
+  </Target>
+</Project>
