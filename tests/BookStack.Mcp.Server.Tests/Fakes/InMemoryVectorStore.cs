@@ -13,8 +13,14 @@ public sealed class InMemoryVectorStore : IVectorStore
 
     public Task UpsertAsync(VectorPageEntry entry, ReadOnlyMemory<float> vector, CancellationToken cancellationToken = default)
     {
-        _records.RemoveAll(r => r.Entry.PageId == entry.PageId);
+        _records.RemoveAll(r => r.Entry.PageId == entry.PageId && r.Entry.ChunkIndex == entry.ChunkIndex);
         _records.Add((entry, vector.ToArray()));
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteChunksAsync(int pageId, CancellationToken cancellationToken = default)
+    {
+        _records.RemoveAll(r => r.Entry.PageId == pageId);
         return Task.CompletedTask;
     }
 
@@ -30,12 +36,15 @@ public sealed class InMemoryVectorStore : IVectorStore
             .Select(r => new VectorSearchResult
             {
                 PageId = r.Entry.PageId,
+                ChunkIndex = r.Entry.ChunkIndex,
                 Title = r.Entry.Title,
                 Url = r.Entry.Url,
                 Excerpt = r.Entry.Excerpt,
                 Score = CosineSimilarity(query, r.Vector),
             })
             .Where(r => r.Score >= minScore)
+            .GroupBy(r => r.PageId)
+            .Select(g => g.OrderByDescending(x => x.Score).First())
             .OrderByDescending(r => r.Score)
             .Take(topN)
             .ToList();
@@ -44,10 +53,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     }
 
     public Task DeleteAsync(int pageId, CancellationToken cancellationToken = default)
-    {
-        _records.RemoveAll(r => r.Entry.PageId == pageId);
-        return Task.CompletedTask;
-    }
+        => DeleteChunksAsync(pageId, cancellationToken);
 
     public Task<string?> GetContentHashAsync(int pageId, CancellationToken cancellationToken = default)
     {

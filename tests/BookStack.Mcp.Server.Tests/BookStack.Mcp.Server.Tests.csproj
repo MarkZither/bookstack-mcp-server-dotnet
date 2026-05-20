@@ -19,12 +19,15 @@
     <PackageReference Include="TUnit" Version="1.*" />
     <PackageReference Include="Moq" Version="4.*" />
     <PackageReference Include="FluentAssertions" Version="7.*" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.*" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.*" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BookStack.Mcp.Server\BookStack.Mcp.Server.csproj" />
     <ProjectReference Include="..\..\src\BookStack.Mcp.Server.Data.Abstractions\BookStack.Mcp.Server.Data.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\BookStack.Mcp.Server.Evaluation\BookStack.Mcp.Server.Evaluation.csproj" />
+    <ProjectReference Include="..\..\src\BookStack.Mcp.Server.Data.SqlServer\BookStack.Mcp.Server.Data.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

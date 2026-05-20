@@ -3,6 +3,8 @@ namespace BookStack.Mcp.Server.Data.Abstractions;
 public sealed class VectorPageEntry
 {
     public int PageId { get; init; }
+    public int ChunkIndex { get; init; }
+    public int TotalChunks { get; init; } = 1;
     public string Slug { get; init; } = string.Empty;
     public string Title { get; init; } = string.Empty;
     public string Url { get; init; } = string.Empty;

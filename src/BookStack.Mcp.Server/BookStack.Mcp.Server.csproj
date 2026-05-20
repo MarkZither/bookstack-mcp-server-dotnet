@@ -26,6 +26,7 @@
     <ProjectReference Include="..\BookStack.Mcp.Server.Data.Abstractions\BookStack.Mcp.Server.Data.Abstractions.csproj" />
     <ProjectReference Include="..\BookStack.Mcp.Server.Data.Sqlite\BookStack.Mcp.Server.Data.Sqlite.csproj" />
     <ProjectReference Include="..\BookStack.Mcp.Server.Data.Postgres\BookStack.Mcp.Server.Data.Postgres.csproj" />
+    <ProjectReference Include="..\MarkZither.Rag.Chunking\MarkZither.Rag.Chunking.csproj" />
   </ItemGroup>
 
 </Project>

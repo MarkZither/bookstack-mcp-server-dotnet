@@ -138,6 +138,9 @@ public static class VectorSearchServiceCollectionExtensions
         public Task UpsertAsync(VectorPageEntry entry, ReadOnlyMemory<float> vector, CancellationToken cancellationToken = default)
             => throw new NotSupportedException("Vector search is disabled.");
 
+        public Task DeleteChunksAsync(int pageId, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException("Vector search is disabled.");
+
         public Task<IReadOnlyList<VectorSearchResult>> SearchAsync(ReadOnlyMemory<float> queryVector, int topN, float minScore, CancellationToken cancellationToken = default)
             => throw new NotSupportedException("Vector search is disabled.");
 
