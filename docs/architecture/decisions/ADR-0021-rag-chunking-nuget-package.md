@@ -73,11 +73,10 @@ Breaking changes must be:
 
 ### Package Signing
 
-NuGet package signing MUST be enabled before the first publish to NuGet.org. Signing will use
-the same code-signing certificate used for the VS Code extension VSIX (tracked in
-[ADR-0018](ADR-0018-vsix-project-layout.md)). If the certificate is not yet available, the
-package may be published unsigned as `0.1.0-preview` and re-published signed as `0.1.0` before
-any consumer takes a non-preview dependency.
+NuGet package signing is **deferred to v1.0.0**. Pre-v1 releases (`0.*`) will be published
+unsigned to NuGet.org, which is permitted by NuGet.org policy. When signing is enabled it will
+use the same code-signing certificate used for the VS Code extension VSIX (tracked in
+[ADR-0018](ADR-0018-vsix-project-layout.md)).
 
 ### Consuming Projects — Pinning and Update Policy
 
@@ -150,7 +149,6 @@ is used; the package has no proprietary dependencies.
 
 - Cross-repo coordination is required when breaking changes are needed (open issue in both
   consumer repos, update both before widening the version range).
-- Package signing adds a CI setup step before the first stable publish.
 - Maintaining a second repo adds surface area (CI, dependabot, releases).
 
 ## Related ADRs
