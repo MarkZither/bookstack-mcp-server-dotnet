@@ -249,19 +249,18 @@ dotnet format         # fix any formatting issues before committing
 
 ### Pre-commit hook
 
-Formatting is enforced by a git hook in [`.githooks/pre-commit`](.githooks/pre-commit).
-It runs `dotnet format --verify-no-changes` on every `git commit` and blocks the commit if issues are found.
+Formatting is enforced by [Husky.Net](https://alirezanet.github.io/Husky.Net/) — a cross-platform .NET git hooks tool.
+It runs `dotnet format --verify-no-changes` via the task runner on every `git commit` and blocks the commit if issues are found.
 
-The hook is **automatically activated** the first time you run `dotnet build` or `dotnet restore`.
-[`Directory.Build.targets`](Directory.Build.targets) runs `git config core.hooksPath .githooks` via MSBuild — no manual setup required.
-
-This does **not** use Husky.net; it is a plain POSIX shell script (`#!/bin/sh`).
+The hook is **automatically installed** the first time you run `dotnet build` or `dotnet restore`.
+[`Directory.Build.targets`](Directory.Build.targets) runs `dotnet tool restore && dotnet husky install` via MSBuild — no manual setup required.
 
 | Platform | Requirement |
 |----------|-------------|
-| Linux / macOS | Works out of the box — `sh` is available everywhere |
-| Windows | Requires [Git for Windows](https://git-scm.com/download/win) (Git Bash) — Git uses the bundled `sh.exe` to run hook scripts |
+| Linux / macOS | Works out of the box |
+| Windows | Requires [Git for Windows](https://git-scm.com/download/win) — Git uses the bundled `sh.exe` to execute hook scripts |
 
+To skip hooks temporarily (e.g. WIP commit): set `HUSKY=0` before committing.
 If the hook blocks your commit, run `dotnet format`, re-stage the changed files, then commit again.
 
 See [docs/](docs/) for architecture decisions, feature specs, and migration guides.

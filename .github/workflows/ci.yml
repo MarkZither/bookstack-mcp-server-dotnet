@@ -22,6 +22,8 @@ jobs:
 
       - name: Restore
         run: dotnet restore
+        env:
+          HUSKY: 0
 
       - name: Build
         run: dotnet build --no-restore --configuration Release

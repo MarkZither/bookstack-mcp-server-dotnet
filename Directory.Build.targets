@@ -1,10 +1,12 @@
 <Project>
   <!--
-    Automatically configure git to use .githooks/ on every restore or build.
+    Automatically install Husky.Net git hooks on every restore or build.
     This ensures the pre-commit hook (dotnet format) is active for every
-    developer without any manual setup step. Skipped in CI (CI env var is set).
+    developer without any manual setup step.
+    Skipped when HUSKY=0 (set this in CI or to temporarily bypass).
   -->
-  <Target Name="ConfigureGitHooks" AfterTargets="Restore" Condition="'$(CI)' == ''">
-    <Exec Command="git config core.hooksPath .githooks" ContinueOnError="true" />
+  <Target Name="HuskyInstall" AfterTargets="Restore" Condition="'$(HUSKY)' != '0'">
+    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" ContinueOnError="true" />
+    <Exec Command="dotnet husky install" StandardOutputImportance="Low" ContinueOnError="true" />
   </Target>
 </Project>
