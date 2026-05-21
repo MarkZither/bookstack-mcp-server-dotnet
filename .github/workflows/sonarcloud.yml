@@ -38,7 +38,7 @@ jobs:
         run: |
           dotnet sonarscanner begin \
             /k:"MarkZither_bookstack-mcp-server-dotnet" \
-            /o:"markzither" \
+            /o:"markzither-github" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage/**.xml" \
@@ -49,7 +49,7 @@ jobs:
 
       - name: Test with coverage
         run: >
-          dotnet test --project tests/BookStack.Mcp.Server.Tests
+          dotnet test tests/BookStack.Mcp.Server.Tests/BookStack.Mcp.Server.Tests.csproj
           --no-build --configuration Release
           --collect:"XPlat Code Coverage;Format=opencover"
           --results-directory coverage
