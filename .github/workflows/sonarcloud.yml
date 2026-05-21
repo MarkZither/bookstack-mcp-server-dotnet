@@ -23,8 +23,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Install SonarCloud scanner
-        run: dotnet tool install --global dotnet-sonarscanner
+      - name: Install tools
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
 
       - name: Restore
         run: dotnet restore
@@ -41,19 +43,18 @@ jobs:
             /o:"markzither-github" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage/**.xml" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage/coverage.xml" \
             /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**"
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
       - name: Test with coverage
-        run: >
-          dotnet test
-          --project tests/BookStack.Mcp.Server.Tests/BookStack.Mcp.Server.Tests.csproj
-          --no-build --configuration Release
-          --collect:"XPlat Code Coverage;Format=opencover"
-          --results-directory coverage
+        run: |
+          dotnet-coverage collect \
+            "dotnet test --project tests/BookStack.Mcp.Server.Tests/BookStack.Mcp.Server.Tests.csproj --no-build --configuration Release" \
+            --output coverage/coverage.xml \
+            --output-format xml
 
       - name: End SonarCloud analysis
         env:
