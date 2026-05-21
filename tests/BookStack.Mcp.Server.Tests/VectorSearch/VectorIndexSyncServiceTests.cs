@@ -7,6 +7,7 @@ using BookStack.Mcp.Server.Data.Abstractions;
 using BookStack.Mcp.Server.Services;
 using BookStack.Mcp.Server.Tests.Fakes;
 using FluentAssertions;
+using MarkZither.Rag.Chunking;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -19,11 +20,13 @@ public sealed class VectorIndexSyncServiceTests
     private readonly Mock<IVectorStore> _mockStore = new();
     private readonly Mock<IEmbeddingGenerator<string, Embedding<float>>> _mockEmbGen = new();
     private readonly Mock<IBookStackApiClient> _mockClient = new();
+    private readonly Mock<IChunkingService> _mockChunkingService = new();
 
     private static readonly IOptions<VectorSearchOptions> _options = Options.Create(new VectorSearchOptions
     {
         Enabled = true,
         Sync = new VectorSyncOptions { IntervalHours = 10_000 }, // prevent immediate re-loop
+        Chunking = new ChunkOptions { ChunkSize = 0 }, // single-chunk fallback for existing tests
     });
 
     private static readonly IOptions<BookStackApiClientOptions> _clientOptions = Options.Create(new BookStackApiClientOptions
@@ -34,6 +37,7 @@ public sealed class VectorIndexSyncServiceTests
     private VectorIndexSyncService CreateService() => new(
         _mockStore.Object,
         _mockEmbGen.Object,
+        _mockChunkingService.Object,
         _mockClient.Object,
         _options,
         _clientOptions,
@@ -198,6 +202,189 @@ public sealed class VectorIndexSyncServiceTests
 
         _mockStore.Verify(
             s => s.SetLastSyncAtAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // T25 — Markdown preference: when Editor == "markdown" and Markdown non-empty, hash and embedding use Markdown text
+    [Test]
+    public async Task SyncPageAsync_MarkdownEditor_UsesMarkdownTextForHashAndEmbedding()
+    {
+        const string markdown = "# Hello\n\nMarkdown content.";
+        const string html = "<h1>Hello</h1><p>HTML fallback.</p>";
+
+        _mockStore.Setup(s => s.GetLastSyncAtAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DateTimeOffset?)null);
+        _mockClient
+            .Setup(c => c.GetPagesUpdatedSinceAsync(It.IsAny<DateTimeOffset>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Page>
+            {
+                Data = [new Page { Id = 10, BookId = 1, Name = "MD Page", Slug = "md-page" }],
+                Total = 1,
+            });
+        _mockClient.Setup(c => c.GetPageAsync(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageWithContent { Id = 10, Editor = "markdown", Markdown = markdown, Html = html });
+        _mockStore.Setup(s => s.GetContentHashAsync(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string?)null);
+        _mockStore.Setup(s => s.DeleteChunksAsync(10, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockEmbGen
+            .Setup(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeEmbeddings([0.1f]));
+        _mockClient.Setup(c => c.GetBookAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BookWithContents { Id = 1, Slug = "test-book" });
+        _mockStore.Setup(s => s.UpsertAsync(It.IsAny<VectorPageEntry>(), It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var cycleDone = WireSetLastSyncAt();
+
+        using var service = CreateService();
+        await service.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        await cycleDone.Task.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+        await service.StopAsync(CancellationToken.None).ConfigureAwait(false);
+
+        var expectedHash = ComputeHash(markdown);
+        _mockStore.Verify(
+            s => s.UpsertAsync(
+                It.Is<VectorPageEntry>(e => e.ContentHash == expectedHash && e.PageId == 10),
+                It.IsAny<ReadOnlyMemory<float>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        // Embedding must be called with the markdown text, not the HTML
+        _mockEmbGen.Verify(
+            g => g.GenerateAsync(
+                It.Is<IEnumerable<string>>(texts => texts.SequenceEqual(new[] { markdown })),
+                It.IsAny<EmbeddingGenerationOptions?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // T26 — HTML fallback: when Editor != "markdown", HTML is used
+    [Test]
+    public async Task SyncPageAsync_NonMarkdownEditor_UsesHtmlTextForHashAndEmbedding()
+    {
+        const string html = "<p>HTML content only.</p>";
+
+        _mockStore.Setup(s => s.GetLastSyncAtAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DateTimeOffset?)null);
+        _mockClient
+            .Setup(c => c.GetPagesUpdatedSinceAsync(It.IsAny<DateTimeOffset>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Page>
+            {
+                Data = [new Page { Id = 11, BookId = 1, Name = "HTML Page", Slug = "html-page" }],
+                Total = 1,
+            });
+        _mockClient.Setup(c => c.GetPageAsync(11, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageWithContent { Id = 11, Editor = "wysiwyg", Html = html });
+        _mockStore.Setup(s => s.GetContentHashAsync(11, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string?)null);
+        _mockStore.Setup(s => s.DeleteChunksAsync(11, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockEmbGen
+            .Setup(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeEmbeddings([0.2f]));
+        _mockClient.Setup(c => c.GetBookAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BookWithContents { Id = 1, Slug = "test-book" });
+        _mockStore.Setup(s => s.UpsertAsync(It.IsAny<VectorPageEntry>(), It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var cycleDone = WireSetLastSyncAt();
+
+        using var service = CreateService();
+        await service.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        await cycleDone.Task.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+        await service.StopAsync(CancellationToken.None).ConfigureAwait(false);
+
+        var expectedHash = ComputeHash(html);
+        _mockStore.Verify(
+            s => s.UpsertAsync(
+                It.Is<VectorPageEntry>(e => e.ContentHash == expectedHash && e.PageId == 11),
+                It.IsAny<ReadOnlyMemory<float>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // T27 — chunked path: IChunkingService called and UpsertAsync called once per chunk
+    [Test]
+    public async Task SyncPageAsync_ChunkingEnabled_UpsertCalledPerChunk()
+    {
+        const string html = "<p>Long content to chunk.</p>";
+        var chunkingOptions = Options.Create(new VectorSearchOptions
+        {
+            Enabled = true,
+            Sync = new VectorSyncOptions { IntervalHours = 10_000 },
+            Chunking = new ChunkOptions { ChunkSize = 512, ChunkOverlap = 128 },
+        });
+
+        var chunks = new List<TextChunk>
+        {
+            new("chunk one", 0, 2, 5),
+            new("chunk two", 1, 2, 4),
+        };
+
+        _mockChunkingService
+            .Setup(c => c.ChunkAsync(html, It.IsAny<ChunkOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(chunks);
+
+        _mockStore.Setup(s => s.GetLastSyncAtAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DateTimeOffset?)null);
+        _mockClient
+            .Setup(c => c.GetPagesUpdatedSinceAsync(It.IsAny<DateTimeOffset>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ListResponse<Page>
+            {
+                Data = [new Page { Id = 20, BookId = 1, Name = "Chunked", Slug = "chunked" }],
+                Total = 1,
+            });
+        _mockClient.Setup(c => c.GetPageAsync(20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageWithContent { Id = 20, Editor = "wysiwyg", Html = html });
+        _mockStore.Setup(s => s.GetContentHashAsync(20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string?)null);
+        _mockStore.Setup(s => s.DeleteChunksAsync(20, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockEmbGen
+            .Setup(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeEmbeddings([0.3f]));
+        _mockClient.Setup(c => c.GetBookAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BookWithContents { Id = 1, Slug = "test-book" });
+        _mockStore.Setup(s => s.UpsertAsync(It.IsAny<VectorPageEntry>(), It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var cycleDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _mockStore.Setup(s => s.SetLastSyncAtAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Callback<DateTimeOffset, CancellationToken>((_, _) => cycleDone.TrySetResult())
+            .Returns(Task.CompletedTask);
+
+        VectorIndexSyncService chunkingService = new(
+            _mockStore.Object,
+            _mockEmbGen.Object,
+            _mockChunkingService.Object,
+            _mockClient.Object,
+            chunkingOptions,
+            _clientOptions,
+            NullLogger<VectorIndexSyncService>.Instance);
+
+        using var service = chunkingService;
+        await service.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        await cycleDone.Task.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+        await service.StopAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // One UpsertAsync call per chunk
+        _mockStore.Verify(
+            s => s.UpsertAsync(
+                It.Is<VectorPageEntry>(e => e.PageId == 20 && e.ChunkIndex == 0 && e.TotalChunks == 2),
+                It.IsAny<ReadOnlyMemory<float>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        _mockStore.Verify(
+            s => s.UpsertAsync(
+                It.Is<VectorPageEntry>(e => e.PageId == 20 && e.ChunkIndex == 1 && e.TotalChunks == 2),
+                It.IsAny<ReadOnlyMemory<float>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        // DeleteChunksAsync called once before upserts
+        _mockStore.Verify(
+            s => s.DeleteChunksAsync(20, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }

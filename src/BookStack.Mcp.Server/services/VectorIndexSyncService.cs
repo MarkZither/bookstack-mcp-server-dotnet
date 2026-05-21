@@ -5,6 +5,7 @@ using BookStack.Mcp.Server.Api;
 using BookStack.Mcp.Server.Api.Models;
 using BookStack.Mcp.Server.Config;
 using BookStack.Mcp.Server.Data.Abstractions;
+using MarkZither.Rag.Chunking;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ namespace BookStack.Mcp.Server.Services;
 internal sealed partial class VectorIndexSyncService(
     IVectorStore vectorStore,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+    IChunkingService chunkingService,
     IBookStackApiClient apiClient,
     IOptions<VectorSearchOptions> options,
     IOptions<BookStackApiClientOptions> clientOptions,
@@ -164,7 +166,24 @@ internal sealed partial class VectorIndexSyncService(
         CancellationToken ct)
     {
         var fullPage = await apiClient.GetPageAsync(page.Id, ct).ConfigureAwait(false);
-        var contentHash = ComputeSha256(fullPage.Html);
+
+        // Prefer Markdown source when the page was authored in the Markdown editor.
+        var useMarkdown = string.Equals(fullPage.Editor, "markdown", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(fullPage.Markdown);
+        var inputText = useMarkdown ? fullPage.Markdown! : fullPage.Html;
+        var inputFormat = useMarkdown ? "markdown" : "html";
+
+        logger.LogDebug("Page {PageId}: using {Format} as embedding input.", page.Id, inputFormat);
+
+        if (!useMarkdown && DrawIORegex().IsMatch(fullPage.Html))
+        {
+            logger.LogWarning(
+                "Page {PageId} ({Title}) contains DrawIO diagram markup; embeddings may be low quality.",
+                page.Id,
+                page.Name);
+        }
+
+        var contentHash = ComputeSha256(inputText);
 
         var storedHash = await vectorStore.GetContentHashAsync(page.Id, ct).ConfigureAwait(false);
         if (contentHash == storedHash)
@@ -172,11 +191,6 @@ internal sealed partial class VectorIndexSyncService(
             logger.LogDebug("Page {PageId} content unchanged; skipping.", page.Id);
             return false;
         }
-
-        var embeddings = await embeddingGenerator
-            .GenerateAsync([fullPage.Html], cancellationToken: ct)
-            .ConfigureAwait(false);
-        var vector = embeddings[0].Vector;
 
         if (!bookSlugCache.TryGetValue(page.BookId, out var bookSlug))
         {
@@ -186,20 +200,69 @@ internal sealed partial class VectorIndexSyncService(
         }
 
         var baseUrl = clientOptions.Value.BaseUrl.TrimEnd('/');
-        var entry = new VectorPageEntry
+        var chunkOpts = options.Value.Chunking;
+
+        await vectorStore.DeleteChunksAsync(page.Id, ct).ConfigureAwait(false);
+
+        if (chunkOpts.ChunkSize == 0)
         {
-            PageId = page.Id,
-            Slug = page.Slug,
-            Title = page.Name,
-            Url = $"{baseUrl}/books/{bookSlug}/pages/{page.Slug}",
-            Excerpt = ExtractExcerpt(fullPage.Html),
-            UpdatedAt = page.UpdatedAt,
-            ContentHash = contentHash,
-        };
+            // Single-embedding fallback — no chunking.
+            var embeddings = await embeddingGenerator
+                .GenerateAsync([inputText], cancellationToken: ct)
+                .ConfigureAwait(false);
 
-        await vectorStore.UpsertAsync(entry, vector, ct).ConfigureAwait(false);
+            var entry = new VectorPageEntry
+            {
+                PageId = page.Id,
+                ChunkIndex = 0,
+                TotalChunks = 1,
+                Slug = page.Slug,
+                Title = page.Name,
+                Url = $"{baseUrl}/books/{bookSlug}/pages/{page.Slug}",
+                Excerpt = ExtractExcerpt(inputText),
+                UpdatedAt = page.UpdatedAt,
+                ContentHash = contentHash,
+            };
 
-        logger.LogDebug("Upserted vector for page {PageId} ({Title}).", page.Id, page.Name);
+            await vectorStore.UpsertAsync(entry, embeddings[0].Vector, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            var chunks = await chunkingService
+                .ChunkAsync(inputText, chunkOpts, ct)
+                .ConfigureAwait(false);
+
+            for (var i = 0; i < chunks.Count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                var chunk = chunks[i];
+                var chunkEmbeddings = await embeddingGenerator
+                    .GenerateAsync([chunk.Text], cancellationToken: ct)
+                    .ConfigureAwait(false);
+
+                var entry = new VectorPageEntry
+                {
+                    PageId = page.Id,
+                    ChunkIndex = chunk.ChunkIndex,
+                    TotalChunks = chunk.TotalChunks,
+                    Slug = page.Slug,
+                    Title = page.Name,
+                    Url = $"{baseUrl}/books/{bookSlug}/pages/{page.Slug}",
+                    Excerpt = ExtractExcerpt(chunk.Text),
+                    UpdatedAt = page.UpdatedAt,
+                    ContentHash = contentHash,
+                };
+
+                await vectorStore.UpsertAsync(entry, chunkEmbeddings[0].Vector, ct).ConfigureAwait(false);
+            }
+        }
+
+        logger.LogDebug(
+            "Upserted vector(s) for page {PageId} ({Title}), format={Format}.",
+            page.Id,
+            page.Name,
+            inputFormat);
 
         return true;
     }
@@ -223,4 +286,7 @@ internal sealed partial class VectorIndexSyncService(
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex WhitespaceRegex();
+
+    [GeneratedRegex(@"<mxGraphModel|data-drawio|class=""drawio""", RegexOptions.IgnoreCase)]
+    private static partial Regex DrawIORegex();
 }

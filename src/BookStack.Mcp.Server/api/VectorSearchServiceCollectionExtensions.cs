@@ -5,6 +5,7 @@ using BookStack.Mcp.Server.Data.Abstractions;
 using BookStack.Mcp.Server.Data.Postgres;
 using BookStack.Mcp.Server.Data.Sqlite;
 using BookStack.Mcp.Server.Services;
+using MarkZither.Rag.Chunking;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,7 @@ public static class VectorSearchServiceCollectionExtensions
 
         RegisterEmbeddingGenerator(services, options);
         RegisterVectorStore(services, options, configuration);
+        services.AddChunking();
 
         services.AddSingleton<VectorIndexSyncService>();
         services.AddHostedService(sp => sp.GetRequiredService<VectorIndexSyncService>());
