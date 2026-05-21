@@ -1,0 +1,62 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0 # full history required for blame / new-code detection
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+
+      - name: Install tools
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
+
+      - name: Restore
+        run: dotnet restore
+        env:
+          HUSKY: 0
+
+      - name: Begin SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"MarkZither_bookstack-mcp-server-dotnet" \
+            /o:"markzither-github" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage/coverage.xml" \
+            /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**"
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test with coverage
+        run: |
+          dotnet-coverage collect \
+            "dotnet test --project tests/BookStack.Mcp.Server.Tests/BookStack.Mcp.Server.Tests.csproj --no-build --configuration Release" \
+            --output coverage/coverage.xml \
+            --output-format xml
+
+      - name: End SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"

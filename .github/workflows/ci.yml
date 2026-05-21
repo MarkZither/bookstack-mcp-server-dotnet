@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write # required for Codecov PR comment
 
 jobs:
   build:
@@ -28,8 +29,22 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release
+      - name: Install dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: Test with coverage
+        run: |
+          dotnet-coverage collect \
+            "dotnet test --project tests/BookStack.Mcp.Server.Tests/BookStack.Mcp.Server.Tests.csproj --no-build --configuration Release" \
+            --output coverage/coverage.cobertura.xml \
+            --output-format cobertura
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/coverage.cobertura.xml
+          fail_ci_if_error: false
 
       - name: Format
         run: dotnet format --verify-no-changes
