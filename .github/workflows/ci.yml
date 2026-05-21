@@ -31,7 +31,8 @@ jobs:
 
       - name: Test
         run: >
-          dotnet test --no-build --configuration Release
+          dotnet test --project tests/BookStack.Mcp.Server.Tests
+          --no-build --configuration Release
           --collect:"XPlat Code Coverage"
           --results-directory coverage
 
