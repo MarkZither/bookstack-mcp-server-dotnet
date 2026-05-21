@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write # required for Codecov PR comment
 
 jobs:
   build:
@@ -29,7 +30,17 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --no-build --configuration Release
+        run: >
+          dotnet test --no-build --configuration Release
+          --collect:"XPlat Code Coverage"
+          --results-directory coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: coverage
+          fail_ci_if_error: false
 
       - name: Format
         run: dotnet format --verify-no-changes
