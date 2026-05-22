@@ -29,15 +29,25 @@ jobs:
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
         with:
           global-json-file: global.json
+          include-prerelease: true
 
       - name: Restore
-        run: dotnet restore src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj
+        run: |
+          dotnet restore src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj
+          dotnet restore tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj
 
       - name: Build
         run: dotnet build src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj --configuration Release --no-restore
 
+      - name: Install dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
+
       - name: Test
-        run: dotnet test --project tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj --configuration Release --no-restore
+        run: |
+          dotnet-coverage collect \
+            "dotnet test --project tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj --configuration Release --no-restore" \
+            --output coverage/coverage.cobertura.xml \
+            --output-format cobertura
 
       - name: Pack
         run: dotnet pack src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj --configuration Release --no-build -o artifacts
