@@ -151,7 +151,7 @@
     "@vscode/vsce": "^3",
     "esbuild": "^0.25",
     "eslint": "^9",
-    "typescript": "~5.7",
+    "typescript": "~6.0",
     "typescript-eslint": "^8",
     "vitest": "^3"
   }
