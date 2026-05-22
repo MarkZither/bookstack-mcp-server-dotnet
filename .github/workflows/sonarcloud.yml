@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   sonarcloud:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -42,7 +43,7 @@ jobs:
           dotnet sonarscanner begin \
             /k:"MarkZither_bookstack-mcp-server-dotnet" \
             /o:"markzither-github" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.vscoveragexml.reportsPaths="coverage/coverage.xml" \
             /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**"
