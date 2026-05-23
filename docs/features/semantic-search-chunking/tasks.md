@@ -69,9 +69,9 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3
 **Depends on**: Phase 3
 
-- [ ] Implement `ReportGenerator.GenerateMarkdownReport(EvaluationResult)` → `string` in `tests/BookStack.Mcp.Server.Evaluation/ReportGenerator.cs`
-- [ ] Report MUST include: `Recall@1`, `Recall@3`, `MRR`, score histogram, pass/fail verdict per metric, and overall gate decision (`Phase 2 required / investigate / not required`)
-- [ ] Wire up full harness: seed → sync → query → metrics → report written to `docs/features/semantic-search-chunking/evaluation-report.md`
+- [x] Implement `ReportGenerator.GenerateMarkdownReport(EvaluationResult)` → `string` in `tests/BookStack.Mcp.Server.Evaluation/ReportGenerator.cs`
+- [x] Report MUST include: `Recall@1`, `Recall@3`, `MRR`, score histogram, pass/fail verdict per metric, and overall gate decision (`Phase 2 required / investigate / not required`)
+- [x] Wire up full harness: seed → sync → query → metrics → report written to `docs/features/semantic-search-chunking/evaluation-report.md`
 - [ ] Run harness against seeded dev instance, commit `evaluation-report.md` to the PR
 - [ ] Update spec status to `Implemented` if all metrics pass; create Phase 5–14 issues if any metric fails/investigates
 
@@ -94,7 +94,7 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3 (conditional on Phase 4 gate)
 **Depends on**: Phase 4 gate decision
 
-- [ ] Write `docs/architecture/decisions/ADR-0021-rag-chunking-nuget-package.md` covering: new repo `MarkZither/rag-chunking-dotnet`, multi-target `net9.0`/`net10.0`, NuGet package signing (Certum or GitHub Actions sigstore), versioning (SemVer, initial `1.0.0`), CI/CD for publish to NuGet.org, and relationship to `DeepWikiOpenDotnet`
+- [x] Write `docs/architecture/decisions/ADR-0021-rag-chunking-nuget-package.md` covering: new repo `MarkZither/rag-chunking-dotnet`, multi-target `net9.0`/`net10.0`, NuGet package signing (Certum or GitHub Actions sigstore), versioning (SemVer, initial `1.0.0`), CI/CD for publish to NuGet.org, and relationship to `DeepWikiOpenDotnet`
 - [ ] Get ADR accepted before Phase 7 work starts
 
 ---

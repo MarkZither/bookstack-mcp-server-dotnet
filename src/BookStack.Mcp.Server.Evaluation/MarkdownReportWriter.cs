@@ -5,6 +5,13 @@ namespace BookStack.Mcp.Server.Evaluation;
 // Refs: FEAT-0060 Phase 4 — Req 1
 public static class MarkdownReportWriter
 {
+    public static async Task<string> GenerateMarkdownReportAsync(EvaluationResult result)
+    {
+        using var ms = new MemoryStream();
+        await WriteAsync(result, ms).ConfigureAwait(false);
+        return Encoding.UTF8.GetString(ms.ToArray());
+    }
+
     public static async Task WriteAsync(EvaluationResult result, Stream output)
     {
         using var writer = new StreamWriter(output, Encoding.UTF8, leaveOpen: true);
