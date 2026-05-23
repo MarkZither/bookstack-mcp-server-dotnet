@@ -72,8 +72,8 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 - [x] Implement `ReportGenerator.GenerateMarkdownReport(EvaluationResult)` → `string` in `tests/BookStack.Mcp.Server.Evaluation/ReportGenerator.cs`
 - [x] Report MUST include: `Recall@1`, `Recall@3`, `MRR`, score histogram, pass/fail verdict per metric, and overall gate decision (`Phase 2 required / investigate / not required`)
 - [x] Wire up full harness: seed → sync → query → metrics → report written to `docs/features/semantic-search-chunking/evaluation-report.md`
-- [ ] Run harness against seeded dev instance, commit `evaluation-report.md` to the PR
-- [ ] Update spec status to `Implemented` if all metrics pass; create Phase 5–14 issues if any metric fails/investigates
+- [x] Run harness against seeded dev instance, commit `evaluation-report.md` to the PR
+- [x] Update spec status to `Evaluation complete — Phase 2 required` (Recall@1=0.0833, Recall@3=0.2500, MRR=0.2514; all below gate thresholds; chunking improvements needed)
 
 ---
 

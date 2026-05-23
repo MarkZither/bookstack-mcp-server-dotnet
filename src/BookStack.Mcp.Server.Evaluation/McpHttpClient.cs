@@ -16,6 +16,7 @@ public sealed class McpHttpClient : IDisposable
 
     private readonly HttpClient _http;
     private int _nextId = 1;
+    private string? _sessionId;
 
     public McpHttpClient(string mcpBaseUrl, string? authToken = null)
     {
@@ -45,7 +46,7 @@ public sealed class McpHttpClient : IDisposable
         int topN,
         CancellationToken ct)
     {
-        var arguments = new { query, topN };
+        var arguments = new { query, topN, minScore = 0.0 };
         var resultText = await CallToolRawAsync("bookstack_semantic_search", arguments, ct)
             .ConfigureAwait(false);
 
@@ -67,11 +68,68 @@ public sealed class McpHttpClient : IDisposable
         return ranked.AsReadOnly();
     }
 
+    private async Task EnsureSessionAsync(CancellationToken ct)
+    {
+        if (_sessionId is not null)
+        {
+            return;
+        }
+
+        var initRequest = new
+        {
+            jsonrpc = "2.0",
+            method = "initialize",
+            @params = new
+            {
+                protocolVersion = "2024-11-05",
+                capabilities = new { },
+                clientInfo = new { name = "BookStack.Mcp.Evaluation", version = "1.0" },
+            },
+            id = _nextId++,
+        };
+
+        using var initContent = JsonContent.Create(initRequest);
+        using var initResponse = await _http.PostAsync("/", initContent, ct).ConfigureAwait(false);
+        initResponse.EnsureSuccessStatusCode();
+
+        if (initResponse.Headers.TryGetValues("Mcp-Session-Id", out var vals))
+        {
+            _sessionId = vals.FirstOrDefault();
+        }
+
+        // Send 'initialized' notification (no id = notification)
+        var initializedNotification = new
+        {
+            jsonrpc = "2.0",
+            method = "notifications/initialized",
+        };
+
+        using var notifContent = JsonContent.Create(initializedNotification);
+        if (_sessionId is not null)
+        {
+            notifContent.Headers.TryAddWithoutValidation("Mcp-Session-Id", _sessionId);
+        }
+
+        using var notifRequest = new HttpRequestMessage(HttpMethod.Post, "/")
+        {
+            Content = notifContent,
+        };
+        if (_sessionId is not null)
+        {
+            notifRequest.Headers.TryAddWithoutValidation("Mcp-Session-Id", _sessionId);
+        }
+
+        using var notifResponse = await _http.SendAsync(notifRequest, ct).ConfigureAwait(false);
+        // 202 Accepted is expected for notifications
+    }
+
     private async Task<string?> CallToolRawAsync(
         string toolName,
         object arguments,
         CancellationToken ct)
     {
+        await EnsureSessionAsync(ct).ConfigureAwait(false);
+
         var id = _nextId++;
         var request = new
         {
@@ -81,8 +139,16 @@ public sealed class McpHttpClient : IDisposable
             id,
         };
 
-        using var content = JsonContent.Create(request);
-        using var response = await _http.PostAsync("/mcp", content, ct).ConfigureAwait(false);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/")
+        {
+            Content = JsonContent.Create(request),
+        };
+        if (_sessionId is not null)
+        {
+            requestMessage.Headers.TryAddWithoutValidation("Mcp-Session-Id", _sessionId);
+        }
+
+        using var response = await _http.SendAsync(requestMessage, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
