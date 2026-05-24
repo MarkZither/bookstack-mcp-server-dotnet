@@ -27,11 +27,21 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3
 **Refs**: Req 1, 2
 
-- [x] Add at least 3 WYSIWYG-editor pages (`Editor = "wysiwyg"`) to `scripts/Seed-BookStack.ps1`
-- [x] Add at least 3 Markdown-editor pages (`Editor = "markdown"`) to `scripts/Seed-BookStack.ps1`
-- [x] Add at least 1 page containing a DrawIO diagram block to `scripts/Seed-BookStack.ps1`
-- [x] Create `tests/BookStack.Mcp.Server.Tests/Evaluation/golden-dataset.json` with ≥ 20 `{ query, expected_page_slug }` pairs covering short, long, code-heavy, and multi-topic pages
-- [x] Document the DrawIO HTML structure observed in the raw `Html` API response (comment in seed script or in `docs/features/semantic-search-chunking/drawio-html-notes.md`)
+> **Dataset v1 → v2 replacement**: The original golden dataset used BookStack documentation pages
+> (installation, LDAP auth, nginx config, etc.). Post-evaluation, all pages were found to share the
+> entity "BookStack" throughout, making them semantically near-identical and producing an artificially
+> hard baseline (Recall@1=0.0833). The dataset has been replaced with ASP.NET Core + .NET
+> fundamentals content (v2). See `spec.md § Golden Dataset Rationale` for details.
+> v1 seed script and `golden-dataset.json` are preserved in git history at commit `5dd50a1`.
+
+- [x] ~~v1~~ Add at least 3 WYSIWYG-editor pages to `scripts/Seed-BookStack.ps1`
+- [x] ~~v1~~ Add at least 3 Markdown-editor pages to `scripts/Seed-BookStack.ps1`
+- [x] ~~v1~~ Add at least 1 page containing a DrawIO diagram block to `scripts/Seed-BookStack.ps1`
+- [x] ~~v1~~ Create `tests/BookStack.Mcp.Server.Tests/Evaluation/golden-dataset.json` with ≥ 20 pairs
+- [x] Document the DrawIO HTML structure in `docs/features/semantic-search-chunking/drawio-html-notes.md`
+- [ ] **v2** Replace `scripts/Seed-BookStack.ps1` `-GoldenDataset` block with 15 ASP.NET Core / .NET pages (content fetched from Microsoft Learn GitHub, CC BY 4.0) covering the v2 page inventory in `spec.md`
+- [ ] **v2** Replace `src/BookStack.Mcp.Server.Evaluation/golden-dataset.json` with ≥ 30 pairs from the v2 page inventory
+- [ ] **v2** Re-run full evaluation harness against re-seeded dev instance; overwrite `evaluation-report.md`
 
 ---
 
@@ -105,10 +115,10 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3 (conditional)
 **Depends on**: Phase 6 (ADR-0021)
 
-- [ ] Create new repository `MarkZither/rag-chunking-dotnet` with standard structure
-- [ ] Create `src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj` targeting `net9.0;net10.0`
-- [ ] Create `tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj` (TUnit)
-- [ ] Add `Tiktoken` NuGet reference (`v2.0.3`) and verify license compatibility
+- [ ] Create new repository `MarkZither/rag-chunking-dotnet` with standard structure (deferred — code lives in this repo for now per ADR-0021 Option A transitional)
+- [x] Create `src/MarkZither.Rag.Chunking/MarkZither.Rag.Chunking.csproj` targeting `net9.0;net10.0;net11.0`
+- [x] Create `tests/MarkZither.Rag.Chunking.Tests/MarkZither.Rag.Chunking.Tests.csproj` (TUnit)
+- [x] Add `Tiktoken` NuGet reference (`v2.0.3`) and verify license compatibility
 - [ ] Add GitHub Actions CI workflow (build + test on push/PR)
 - [ ] Add NuGet publish workflow (on release tag)
 
@@ -120,14 +130,14 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3 (conditional)
 **Depends on**: Phase 7
 
-- [ ] [P] Create `src/MarkZither.Rag.Chunking/ITokenEncoder.cs` (`CountTokens(string text) → int`)
-- [ ] [P] Create `src/MarkZither.Rag.Chunking/TiktokenEncoder.cs` (cl100k_base, implements `ITokenEncoder`)
-- [ ] [P] Create `src/MarkZither.Rag.Chunking/ChunkOptions.cs` (`ChunkSize=512`, `ChunkOverlap=128`, `MaxChunksPerDocument=200`, `StripHtml=true`)
-- [ ] [P] Create `src/MarkZither.Rag.Chunking/TextChunk.cs` (record: `Text`, `ChunkIndex`, `TotalChunks`, `TokenCount`)
-- [ ] [P] Create `src/MarkZither.Rag.Chunking/IChunkingService.cs` (`ChunkAsync(string, ChunkOptions, CancellationToken) → IReadOnlyList<TextChunk>`)
-- [ ] Create `src/MarkZither.Rag.Chunking/Internal/HtmlStripper.cs` (removes `<script>`, `<style>`, tags; strips DrawIO `<div>`/`<figure>` blocks containing base64 XML; configurable DrawIO regex; no `HtmlAgilityPack` dependency)
-- [ ] Create `src/MarkZither.Rag.Chunking/SlideWindowChunkingService.cs` — token-aware sliding window with overlap, sentence/paragraph boundary snapping; mirrors `DeepWiki.Rag.Core.Tokenization.Chunker` (commit `8b5887b`); enforces `MaxChunksPerDocument` and 5 MB input guard
-- [ ] Create `src/MarkZither.Rag.Chunking/ServiceCollectionExtensions.cs` (`AddChunking(IServiceCollection)`)
+- [x] [P] Create `src/MarkZither.Rag.Chunking/ITokenEncoder.cs` (`CountTokens(string text) → int`)
+- [x] [P] Create `src/MarkZither.Rag.Chunking/TiktokenEncoder.cs` (cl100k_base, implements `ITokenEncoder`)
+- [x] [P] Create `src/MarkZither.Rag.Chunking/ChunkOptions.cs` (`ChunkSize=512`, `ChunkOverlap=128`, `MaxChunksPerDocument=200`, `StripHtml=true`)
+- [x] [P] Create `src/MarkZither.Rag.Chunking/TextChunk.cs` (record: `Text`, `ChunkIndex`, `TotalChunks`, `TokenCount`)
+- [x] [P] Create `src/MarkZither.Rag.Chunking/IChunkingService.cs` (`ChunkAsync(string, ChunkOptions, CancellationToken) → IReadOnlyList<TextChunk>`)
+- [x] Create `src/MarkZither.Rag.Chunking/Internal/HtmlStripper.cs` (removes `<script>`, `<style>`, tags; strips DrawIO `<div>`/`<figure>` blocks containing base64 XML; configurable DrawIO regex; no `HtmlAgilityPack` dependency)
+- [x] Create `src/MarkZither.Rag.Chunking/SlideWindowChunkingService.cs` — token-aware sliding window with overlap, sentence/paragraph boundary snapping; mirrors `DeepWiki.Rag.Core.Tokenization.Chunker` (commit `8b5887b`); enforces `MaxChunksPerDocument` and 5 MB input guard
+- [x] Create `src/MarkZither.Rag.Chunking/ServiceCollectionExtensions.cs` (`AddChunking(IServiceCollection)`)
 - [ ] Validate algorithm parity with `DeepWiki.Rag.Core.Tokenization.Chunker` (commit `8b5887b`) — document any intentional deviations
 
 ---
@@ -138,13 +148,13 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Tracks**: Part of #3 (conditional)
 **Depends on**: Phase 8
 
-- [ ] Write tests for `SlideWindowChunkingService`: short text (< `ChunkSize`), exact-fit, multi-chunk, overlap correctness, `MaxChunksPerDocument` ceiling, `ChunkSize=0` returns full text, boundary snapping
-- [ ] Write tests for `HtmlStripper`: tag removal, `<script>`/`<style>` removal, DrawIO block detection + removal, no-op on clean text, regex-configurable DrawIO pattern
-- [ ] Write tests for `TiktokenEncoder`: known token counts for fixed strings
+- [x] Write tests for `SlideWindowChunkingService`: short text (< `ChunkSize`), exact-fit, multi-chunk, overlap correctness, `MaxChunksPerDocument` ceiling, `ChunkSize=0` returns full text, boundary snapping
+- [x] Write tests for `HtmlStripper`: tag removal, `<script>`/`<style>` removal, DrawIO block detection + removal, no-op on clean text, regex-configurable DrawIO pattern
+- [x] Write tests for `TiktokenEncoder`: known token counts for fixed strings
 - [ ] Achieve > 90% line coverage (verified by `dotnet test --collect:"XPlat Code Coverage"`)
-- [ ] Configure NuGet package metadata (`PackageId`, `Authors`, `Description`, `RepositoryUrl`, `PackageLicenseExpression`)
+- [x] Configure NuGet package metadata (`PackageId`, `Authors`, `Description`, `RepositoryUrl`, `PackageLicenseExpression`)
 - [ ] Enable NuGet package signing per ADR-0021
-- [ ] Tag `v1.0.0` and verify the publish workflow pushes to NuGet.org staging feed
+- [ ] Tag `v0.1.0` and verify the publish workflow pushes to NuGet.org
 
 ---
 
