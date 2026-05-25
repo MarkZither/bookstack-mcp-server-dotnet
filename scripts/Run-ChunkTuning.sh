@@ -6,15 +6,18 @@
 #
 # Prerequisites:
 #   - BookStack running at http://localhost:6875 with the v2 seed data
-#   - Ollama running with mxbai-embed-large and nomic-embed-text pulled
+#   - Ollama running with all three models pulled:
+#       ollama pull nomic-embed-text
+#       ollama pull mxbai-embed-large
+#       ollama pull bge-large-en-v1.5
 #   - dotnet 10 SDK on PATH
 #
 # Usage:
 #   cd /home/mark/github/bookstack-mcp-server-dotnet
 #   bash scripts/Run-ChunkTuning.sh
 #
-# Each run takes ~10 min (mxbai indexing) or ~5 min (nomic indexing) + ~1 min eval.
-# Total estimated time: ~2-3 hours.
+# Each run takes ~10 min (mxbai/bge indexing) or ~5 min (nomic indexing) + ~1 min eval.
+# 3 models × 7 configs = 21 runs. Total estimated time: ~3-4 hours.
 
 set -euo pipefail
 
@@ -52,27 +55,40 @@ EOF
 # ──────────────────────────────────────────────────────────────────────────────
 
 stop_server() {
-    pkill -f "BookStack.Mcp.Server$" 2>/dev/null || true
+    # .dll suffix — matches both 'dotnet ...BookStack.Mcp.Server.dll' and direct exe
+    pkill -f "BookStack.Mcp.Server" 2>/dev/null || true
     sleep 3
 }
 
+# Returns 0 if sync completed, 1 if process died before completing.
 wait_for_sync() {
     local log_file="$1"
+    local server_pid="$2"
     local timeout_secs=900  # 15 min max
     local elapsed=0
-    echo "  Waiting for vector index sync..."
-    until grep -q "Vector index sync complete" "$log_file" 2>/dev/null; do
+    echo "  Waiting for vector index sync (server PID $server_pid)..."
+    while true; do
+        # Success
+        if grep -q "Vector index sync complete" "$log_file" 2>/dev/null; then
+            echo "  Sync complete."
+            return 0
+        fi
+        # Crash — process no longer alive
+        if ! kill -0 "$server_pid" 2>/dev/null; then
+            echo "  ERROR: server process $server_pid died before sync completed."
+            echo "  Last 20 lines of $log_file:"
+            tail -20 "$log_file" 2>/dev/null || true
+            return 1
+        fi
         sleep 10
         elapsed=$((elapsed + 10))
         if [[ $elapsed -ge $timeout_secs ]]; then
-            echo "  ERROR: sync timed out after ${timeout_secs}s"
-            exit 1
+            echo "  ERROR: sync timed out after ${timeout_secs}s — killing server"
+            kill "$server_pid" 2>/dev/null || true
+            return 1
         fi
-        local progress
-        progress=$(grep -c "Upserting chunk\|Upserted:" "$log_file" 2>/dev/null || echo "0")
         echo "  ...still syncing (${elapsed}s elapsed)"
     done
-    echo "  Sync complete."
 }
 
 extract_metric() {
@@ -137,8 +153,13 @@ run_one() {
     BOOKSTACK_ADMIN_PORT="$ADMIN_PORT" \
     nohup dotnet "$REPO_ROOT/src/BookStack.Mcp.Server/bin/Release/net10.0/BookStack.Mcp.Server.dll" \
         > "$log_file" 2>&1 &
+    local server_pid=$!
 
-    wait_for_sync "$log_file"
+    if ! wait_for_sync "$log_file" "$server_pid"; then
+        echo "  SKIPPED — server failed to start. Appending FAILED to summary."
+        echo "| $model | $chunk_size | $chunk_overlap | FAILED | FAILED | FAILED | — | — |" >> "$SUMMARY"
+        return 0  # continue to next run
+    fi
 
     echo "  Running evaluation..."
     MCP_BASE_URL="http://localhost:${MCP_PORT}" \
@@ -174,13 +195,26 @@ for cfg in "${CHUNK_CONFIGS[@]}"; do
 done
 
 # ──────────────────────────────────────────────────────────────────────────────
-# PHASE 2 — mxbai-embed-large (1024-dim)
+# PHASE 2 — bge-large-en-v1.5 (1024-dim — same as mxbai, no rebuild needed)
+# Pull first: ollama pull bge-large-en-v1.5
 # ──────────────────────────────────────────────────────────────────────────────
 
 echo ""
-echo "▶▶ PHASE 2: mxbai-embed-large (setting dimension to 1024 and rebuilding)"
+echo "▶▶ PHASE 2: bge-large-en-v1.5 (1024-dim — reusing nomic binary? No, rebuild to 1024)"
 set_dimension 1024
 build_server
+
+for cfg in "${CHUNK_CONFIGS[@]}"; do
+    IFS=: read -r cs co <<< "$cfg"
+    run_one "bge-large-en-v1.5" 1024 "" "$cs" "$co"
+done
+
+# ──────────────────────────────────────────────────────────────────────────────
+# PHASE 3 — mxbai-embed-large (1024-dim — same binary, no rebuild)
+# ──────────────────────────────────────────────────────────────────────────────
+
+echo ""
+echo "▶▶ PHASE 3: mxbai-embed-large (1024-dim)"
 
 MXBAI_PREFIX="Represent this sentence for searching relevant passages: "
 for cfg in "${CHUNK_CONFIGS[@]}"; do
