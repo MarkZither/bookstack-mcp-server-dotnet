@@ -9,7 +9,7 @@
 #   - Ollama running with all three models pulled:
 #       ollama pull nomic-embed-text
 #       ollama pull mxbai-embed-large
-#       ollama pull bge-large-en-v1.5
+#       ollama pull qllama/bge-large-en-v1.5
 #   - dotnet 10 SDK on PATH
 #
 # Usage:
@@ -164,7 +164,7 @@ run_one() {
     echo "  Running evaluation..."
     MCP_BASE_URL="http://localhost:${MCP_PORT}" \
     dotnet test "$REPO_ROOT/tests/BookStack.Mcp.Server.Evaluation/" \
-        --configuration Release 2>&1 | grep -E "passed|failed|succeeded"
+        --configuration Release 2>&1 | grep -E "passed|failed|succeeded" || true
 
     cp "$REPORT_PATH" "$out_report"
     echo "  Report saved: $out_report"
@@ -196,7 +196,7 @@ done
 
 # ──────────────────────────────────────────────────────────────────────────────
 # PHASE 2 — bge-large-en-v1.5 (1024-dim — same as mxbai, no rebuild needed)
-# Pull first: ollama pull bge-large-en-v1.5
+# Pull first: ollama pull qllama/bge-large-en-v1.5
 # ──────────────────────────────────────────────────────────────────────────────
 
 echo ""
@@ -206,7 +206,7 @@ build_server
 
 for cfg in "${CHUNK_CONFIGS[@]}"; do
     IFS=: read -r cs co <<< "$cfg"
-    run_one "bge-large-en-v1.5" 1024 "" "$cs" "$co"
+    run_one "qllama/bge-large-en-v1.5" 1024 "" "$cs" "$co"
 done
 
 # ──────────────────────────────────────────────────────────────────────────────
