@@ -14,7 +14,10 @@
 #
 # Usage:
 #   cd /home/mark/github/bookstack-mcp-server-dotnet
-#   bash scripts/Run-ChunkTuning.sh
+#   bash scripts/Run-ChunkTuning.sh                          # all 3 models
+#   bash scripts/Run-ChunkTuning.sh --model nomic-embed-text
+#   bash scripts/Run-ChunkTuning.sh --model mxbai-embed-large
+#   bash scripts/Run-ChunkTuning.sh --model qllama/bge-large-en-v1.5
 #
 # Each run takes ~10 min (mxbai/bge indexing) or ~5 min (nomic indexing) + ~1 min eval.
 # 3 models × 7 configs = 21 runs. Total estimated time: ~3-4 hours.
@@ -27,6 +30,15 @@ REPORT_PATH="$REPO_ROOT/docs/features/semantic-search-chunking/evaluation-report
 BOOKSTACK_TOKEN="6sNZBFZeTgnItw9A1PkpsVLMUeRsivtk:HZPiv4bj4lFTyt5qN83WvGlSK09ni2IQ"
 MCP_PORT=3000
 ADMIN_PORT=5175
+
+# Optional model filter: set via --model argument
+MODEL_FILTER=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --model) MODEL_FILTER="$2"; shift 2 ;;
+        *) echo "Unknown argument: $1" >&2; exit 1 ;;
+    esac
+done
 
 # Chunk configs: "ChunkSize:ChunkOverlap"
 CHUNK_CONFIGS=(
@@ -64,7 +76,7 @@ stop_server() {
 wait_for_sync() {
     local log_file="$1"
     local server_pid="$2"
-    local timeout_secs=900  # 15 min max
+    local timeout_secs=1800  # 30 min max
     local elapsed=0
     echo "  Waiting for vector index sync (server PID $server_pid)..."
     while true; do
@@ -125,9 +137,11 @@ run_one() {
     local query_prefix="$3"
     local chunk_size="$4"
     local chunk_overlap="$5"
-    local db_path="/tmp/bookstack-vectors-${model//:/}-cs${chunk_size}-co${chunk_overlap}.db"
-    local log_file="/tmp/mcp-server-${model//:/}-cs${chunk_size}-co${chunk_overlap}.log"
-    local label="${model}__cs${chunk_size}_co${chunk_overlap}"
+    local safe_model="${model//\//_}"
+    local safe_model="${safe_model//:/_}"
+    local db_path="/tmp/bookstack-vectors-${safe_model}-cs${chunk_size}-co${chunk_overlap}.db"
+    local log_file="/tmp/mcp-server-${safe_model}-cs${chunk_size}-co${chunk_overlap}.log"
+    local label="${safe_model}__cs${chunk_size}_co${chunk_overlap}"
     local out_report="$RESULTS_DIR/eval-${label}.md"
 
     echo ""
@@ -186,13 +200,16 @@ run_one() {
 
 echo ""
 echo "▶▶ PHASE 1: nomic-embed-text (setting dimension to 768 and rebuilding)"
-set_dimension 768
-build_server
-
-for cfg in "${CHUNK_CONFIGS[@]}"; do
-    IFS=: read -r cs co <<< "$cfg"
-    run_one "nomic-embed-text" 768 "" "$cs" "$co"
-done
+if [[ -z "$MODEL_FILTER" || "$MODEL_FILTER" == "nomic-embed-text" ]]; then
+    set_dimension 768
+    build_server
+    for cfg in "${CHUNK_CONFIGS[@]}"; do
+        IFS=: read -r cs co <<< "$cfg"
+        run_one "nomic-embed-text" 768 "" "$cs" "$co"
+    done
+else
+    echo "  Skipped (--model filter active)"
+fi
 
 # ──────────────────────────────────────────────────────────────────────────────
 # PHASE 2 — bge-large-en-v1.5 (1024-dim — same as mxbai, no rebuild needed)
@@ -200,14 +217,17 @@ done
 # ──────────────────────────────────────────────────────────────────────────────
 
 echo ""
-echo "▶▶ PHASE 2: bge-large-en-v1.5 (1024-dim — reusing nomic binary? No, rebuild to 1024)"
-set_dimension 1024
-build_server
-
-for cfg in "${CHUNK_CONFIGS[@]}"; do
-    IFS=: read -r cs co <<< "$cfg"
-    run_one "qllama/bge-large-en-v1.5" 1024 "" "$cs" "$co"
-done
+echo "▶▶ PHASE 2: bge-large-en-v1.5 (1024-dim)"
+if [[ -z "$MODEL_FILTER" || "$MODEL_FILTER" == "qllama/bge-large-en-v1.5" ]]; then
+    set_dimension 1024
+    build_server
+    for cfg in "${CHUNK_CONFIGS[@]}"; do
+        IFS=: read -r cs co <<< "$cfg"
+        run_one "qllama/bge-large-en-v1.5" 1024 "" "$cs" "$co"
+    done
+else
+    echo "  Skipped (--model filter active)"
+fi
 
 # ──────────────────────────────────────────────────────────────────────────────
 # PHASE 3 — mxbai-embed-large (1024-dim — same binary, no rebuild)
@@ -215,12 +235,20 @@ done
 
 echo ""
 echo "▶▶ PHASE 3: mxbai-embed-large (1024-dim)"
-
-MXBAI_PREFIX="Represent this sentence for searching relevant passages: "
-for cfg in "${CHUNK_CONFIGS[@]}"; do
-    IFS=: read -r cs co <<< "$cfg"
-    run_one "mxbai-embed-large" 1024 "$MXBAI_PREFIX" "$cs" "$co"
-done
+if [[ -z "$MODEL_FILTER" || "$MODEL_FILTER" == "mxbai-embed-large" ]]; then
+    MXBAI_PREFIX="Represent this sentence for searching relevant passages: "
+    # Binary is already 1024-dim; rebuild only if coming from a nomic-only run
+    if [[ "$MODEL_FILTER" == "mxbai-embed-large" ]]; then
+        set_dimension 1024
+        build_server
+    fi
+    for cfg in "${CHUNK_CONFIGS[@]}"; do
+        IFS=: read -r cs co <<< "$cfg"
+        run_one "mxbai-embed-large" 1024 "$MXBAI_PREFIX" "$cs" "$co"
+    done
+else
+    echo "  Skipped (--model filter active)"
+fi
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Done — restore mxbai as default and print summary
