@@ -29,7 +29,7 @@ public sealed class VectorPageRecordConfiguration : IEntityTypeConfiguration<Vec
         builder.Property(e => e.Url).HasMaxLength(1024);
         builder.Property(e => e.Excerpt).HasMaxLength(2048);
         builder.Property(e => e.ContentHash).HasMaxLength(64);
-        builder.Property(e => e.Embedding).HasColumnType("vector(768)");
+        builder.Property(e => e.Embedding).HasColumnType("vector(1024)");
 
         builder.HasIndex(e => e.Embedding)
             .HasMethod("hnsw")

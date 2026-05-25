@@ -16,6 +16,13 @@ public sealed class VectorSearchOptions
     public AzureOpenAIEmbeddingOptions AzureOpenAI { get; set; } = new();
     public VectorSyncOptions Sync { get; set; } = new();
     public ChunkOptions Chunking { get; set; } = new();
+
+    /// <summary>
+    /// Dimensionality of the embedding vectors produced by the chosen model.
+    /// Must match the value compiled into the provider's entity/schema.
+    /// nomic-embed-text: 768 | mxbai-embed-large: 1024 | text-embedding-ada-002: 1536
+    /// </summary>
+    public int EmbeddingDimensions { get; set; } = VectorSearchDefaults.EmbeddingDimensions;
 }
 
 public sealed class OllamaEmbeddingOptions
@@ -42,8 +49,8 @@ public static class VectorSearchDefaults
     public const string Database = "Sqlite";
     public const string EmbeddingProvider = "Ollama";
     public const string OllamaBaseUrl = "http://localhost:11434";
-    public const string OllamaModel = "nomic-embed-text";
+    public const string OllamaModel = "mxbai-embed-large";
     public const double SyncIntervalHours = 24.0;
     public const int SyncBatchSize = 50;
-    public const int EmbeddingDimensions = 768;
+    public const int EmbeddingDimensions = 1024;
 }

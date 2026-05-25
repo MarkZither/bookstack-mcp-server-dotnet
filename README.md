@@ -82,12 +82,39 @@ docker compose up -d
 | `VectorSearch__Database` | — | `Sqlite` (default) \| `Postgres` |
 | `VectorSearch__EmbeddingProvider` | — | `Ollama` (default) \| `AzureOpenAI` |
 | `VectorSearch__Ollama__BaseUrl` | — | Ollama base URL (default: `http://localhost:11434`) |
-| `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `nomic-embed-text`) |
+| `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `mxbai-embed-large`) — see [Embedding Model Selection](#embedding-model-selection) |
 | `VectorSearch__AzureOpenAI__Endpoint` | — | Azure OpenAI endpoint (when using AzureOpenAI provider) |
 | `VectorSearch__AzureOpenAI__DeploymentName` | — | Azure OpenAI deployment name |
 | `VectorSearch__AzureOpenAI__ApiKey` | — | Azure OpenAI API key |
 | `VectorSearch__Sync__IntervalHours` | — | How often to sync embeddings (default: `24`) |
 | `VectorSearch__Sync__BatchSize` | — | Pages per sync batch (default: `50`) |
+
+### Embedding Model Selection
+
+The embedding model determines vector quality and dimension. The following models were benchmarked against the v2 golden dataset (30 queries, ASP.NET Core / .NET developer knowledge):
+
+| Model | Dimensions | Recall@1 | Recall@3 | MRR | Verdict |
+|-------|-----------|---------|---------|-----|---------|
+| `nomic-embed-text:latest` (v1.5) | 768 | 0.4333 | 0.8000 | 0.6067 | INVESTIGATE |
+| `mxbai-embed-large:latest` | 1024 | **0.4667** | **0.8333** | **0.6428** | **INVESTIGATE** |
+
+**Recommendation**: use `mxbai-embed-large` — it outperforms `nomic-embed-text` on all three metrics and is the new default.
+
+Pull the recommended model before starting the server:
+
+```bash
+ollama pull mxbai-embed-large
+```
+
+#### Changing the embedding model
+
+Switching to a model with a **different vector dimension** (e.g. 768 → 1024) requires:
+
+1. Update `VectorSearch__Ollama__Model` (or `BOOKSTACK_VECTOR_OLLAMA_MODEL`) to the new model name.
+2. Delete or replace the existing vector database file (`Data Source=bookstack-vectors.db`) — the schema is incompatible.
+3. Restart the server; it will re-index all pages automatically.
+
+> **Note:** The vector dimension is compiled into the schema. Changing between models with the **same** dimension (e.g. two 768-dim models) only requires updating the model name and a full re-index; no schema change is needed.
 
 ### Local Development (self-hosted BookStack + F5 debugging)
 
