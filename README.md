@@ -83,6 +83,7 @@ docker compose up -d
 | `VectorSearch__EmbeddingProvider` | — | `Ollama` (default) \| `AzureOpenAI` |
 | `VectorSearch__Ollama__BaseUrl` | — | Ollama base URL (default: `http://localhost:11434`) |
 | `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `mxbai-embed-large`) — see [Embedding Model Selection](#embedding-model-selection) |
+| `VectorSearch__Ollama__QueryPrefix` | — | Prefix prepended to query strings before embedding (default: mxbai asymmetric prefix). Set to empty string for `nomic-embed-text`. |
 | `VectorSearch__AzureOpenAI__Endpoint` | — | Azure OpenAI endpoint (when using AzureOpenAI provider) |
 | `VectorSearch__AzureOpenAI__DeploymentName` | — | Azure OpenAI deployment name |
 | `VectorSearch__AzureOpenAI__ApiKey` | — | Azure OpenAI API key |

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -70,10 +71,12 @@ public sealed class EvaluationHarness
         var results = new List<QueryResult>(dataset.Count);
         foreach (var entry in dataset)
         {
+            var sw = Stopwatch.StartNew();
             var ranked = await mcpClient
                 .CallSemanticSearchAsync(entry.Query, topK, cancellationToken)
                 .ConfigureAwait(false);
-            results.Add(new QueryResult(entry.Query, entry.Expected_Page_Slug, ranked));
+            sw.Stop();
+            results.Add(new QueryResult(entry.Query, entry.Expected_Page_Slug, ranked, sw.ElapsedMilliseconds));
         }
 
         return results.AsReadOnly();

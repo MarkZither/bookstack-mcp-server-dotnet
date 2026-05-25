@@ -1,6 +1,6 @@
 ﻿﻿# Semantic Search Quality Evaluation Report
 
-**Generated**: 2026-05-25 13:32:10 UTC
+**Generated**: 2026-05-25 13:51:04 UTC
 
 ## Overall Verdict
 **INVESTIGATE**
@@ -33,17 +33,25 @@
 - **Queries evaluated**: 30
 - **Verdict**: investigate
 
+## Query Latency (end-to-end, including embedding)
+
+| Percentile | Latency |
+|------------|---------|
+| p50 | 212 ms |
+| p95 | 311 ms |
+
 ---
 
 ## Model Comparison
 
 Results across embedding models using the same golden dataset (30 queries, v2).
 
-| Model | Dimensions | Recall@1 | Recall@3 | MRR | Verdict |
-|-------|-----------|---------|---------|-----|---------|
-| nomic-embed-text:latest (v1.5) | 768 | 0.4333 | 0.8000 | 0.6067 | INVESTIGATE |
-| mxbai-embed-large:latest | 1024 | **0.4667** | **0.8333** | **0.6428** | **INVESTIGATE** |
+| Model | Dimensions | Query Prefix | Recall@1 | Recall@3 | MRR | p50 | p95 |
+|-------|-----------|-------------|---------|---------|-----|-----|-----|
+| nomic-embed-text:latest (v1.5) | 768 | none | 0.4333 | 0.8000 | 0.6067 | — | — |
+| mxbai-embed-large:latest | 1024 | none | 0.4667 | 0.8333 | 0.6428 | — | — |
+| mxbai-embed-large:latest | 1024 | `Represent this sentence for searching relevant passages:` | **0.4667** | **0.8333** | **0.6428** | 212 ms | 311 ms |
 
-`mxbai-embed-large` outperforms `nomic-embed-text` on all three metrics. Both models require investigation before production use, but mxbai is the recommended default.
+`mxbai-embed-large` outperforms `nomic-embed-text` on all three metrics. Adding the asymmetric query prefix produced no measurable change on this dataset — the DB was already indexed without the prefix (correct asymmetric usage: documents unmodified, queries prefixed).
 
 > **Note:** Changing embedding models requires updating the compiled dimension constant and starting with a fresh vector database. See the README for guidance.

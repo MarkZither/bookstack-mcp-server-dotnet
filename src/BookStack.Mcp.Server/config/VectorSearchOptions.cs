@@ -29,6 +29,13 @@ public sealed class OllamaEmbeddingOptions
 {
     public string BaseUrl { get; set; } = VectorSearchDefaults.OllamaBaseUrl;
     public string Model { get; set; } = VectorSearchDefaults.OllamaModel;
+
+    /// <summary>
+    /// Prefix prepended to query strings before embedding. Improves retrieval quality
+    /// for asymmetric models. mxbai-embed-large requires this prefix; nomic-embed-text does not.
+    /// Set to empty string to disable.
+    /// </summary>
+    public string QueryPrefix { get; set; } = VectorSearchDefaults.OllamaQueryPrefix;
 }
 
 public sealed class AzureOpenAIEmbeddingOptions
@@ -50,6 +57,7 @@ public static class VectorSearchDefaults
     public const string EmbeddingProvider = "Ollama";
     public const string OllamaBaseUrl = "http://localhost:11434";
     public const string OllamaModel = "mxbai-embed-large";
+    public const string OllamaQueryPrefix = "Represent this sentence for searching relevant passages: ";
     public const double SyncIntervalHours = 24.0;
     public const int SyncBatchSize = 50;
     public const int EmbeddingDimensions = 1024;

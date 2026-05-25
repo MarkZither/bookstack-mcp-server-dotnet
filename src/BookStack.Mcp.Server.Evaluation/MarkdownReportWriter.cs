@@ -68,6 +68,15 @@ public static class MarkdownReportWriter
         await writer.WriteLineAsync().ConfigureAwait(false);
         await writer.WriteLineAsync($"- **Queries evaluated**: {result.QueryResults.Count}").ConfigureAwait(false);
         await writer.WriteLineAsync($"- **Verdict**: {result.OverallVerdict}").ConfigureAwait(false);
+        await writer.WriteLineAsync().ConfigureAwait(false);
+
+        // Latency
+        await writer.WriteLineAsync("## Query Latency (end-to-end, including embedding)").ConfigureAwait(false);
+        await writer.WriteLineAsync().ConfigureAwait(false);
+        await writer.WriteLineAsync("| Percentile | Latency |").ConfigureAwait(false);
+        await writer.WriteLineAsync("|------------|---------|").ConfigureAwait(false);
+        await writer.WriteLineAsync($"| p50 | {result.P50LatencyMs} ms |").ConfigureAwait(false);
+        await writer.WriteLineAsync($"| p95 | {result.P95LatencyMs} ms |").ConfigureAwait(false);
 
         await writer.FlushAsync().ConfigureAwait(false);
     }
