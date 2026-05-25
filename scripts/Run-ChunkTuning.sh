@@ -58,8 +58,8 @@ SUMMARY="$RESULTS_DIR/summary.md"
 cat > "$SUMMARY" << 'EOF'
 # Chunk Tuning Evaluation Summary
 
-| Model | ChunkSize | ChunkOverlap | Recall@1 | Recall@3 | MRR | p50 | p95 |
-|-------|-----------|-------------|---------|---------|-----|-----|-----|
+| Model | ChunkSize | ChunkOverlap | Recall@1 | Recall@3 | MRR | p50 | p95 | Chunks | DbMB |
+|-------|-----------|-------------|---------|---------|-----|-----|-----|--------|------|
 EOF
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ run_one() {
 
     if ! wait_for_sync "$log_file" "$server_pid"; then
         echo "  SKIPPED — server failed to start. Appending FAILED to summary."
-        echo "| $model | $chunk_size | $chunk_overlap | FAILED | FAILED | FAILED | — | — |" >> "$SUMMARY"
+        echo "| $model | $chunk_size | $chunk_overlap | FAILED | FAILED | FAILED | — | — | — | — |" >> "$SUMMARY"
         return 0  # continue to next run
     fi
 
@@ -183,15 +183,18 @@ run_one() {
     cp "$REPORT_PATH" "$out_report"
     echo "  Report saved: $out_report"
 
-    local r1 r3 mrr p50 p95
+    local r1 r3 mrr p50 p95 chunks db_mb
     r1=$(extract_metric "$out_report" "Recall@1")
     r3=$(extract_metric "$out_report" "Recall@3")
     mrr=$(extract_metric "$out_report" "MRR")
     p50=$(extract_latency "$out_report" "p50")
     p95=$(extract_latency "$out_report" "p95")
+    # Chunk count from sync log ("Upserted: N"); DB size from stat
+    chunks=$(grep -oP 'Upserted: \K[0-9]+' "$log_file" 2>/dev/null | tail -1 || echo "?")
+    db_mb=$(python3 -c "import os; s=os.path.getsize('${db_path}'); print(f'{s/1048576:.1f}')" 2>/dev/null || echo "?")
 
-    echo "| $model | $chunk_size | $chunk_overlap | $r1 | $r3 | $mrr | $p50 | $p95 |" >> "$SUMMARY"
-    echo "  Recall@1=$r1  Recall@3=$r3  MRR=$mrr  p50=$p50  p95=$p95"
+    echo "| $model | $chunk_size | $chunk_overlap | $r1 | $r3 | $mrr | $p50 | $p95 | $chunks | ${db_mb}MB |" >> "$SUMMARY"
+    echo "  Recall@1=$r1  Recall@3=$r3  MRR=$mrr  p50=$p50  p95=$p95  chunks=$chunks  db=${db_mb}MB"
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
