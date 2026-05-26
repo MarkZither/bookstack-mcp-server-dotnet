@@ -1,0 +1,15 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 75%
+        threshold: 5%
+
+ignore:
+  # Live-server integration harness — cannot be unit tested; covered by eval runs
+  - "src/BookStack.Mcp.Server.Evaluation/**"
+  - "tests/BookStack.Mcp.Server.Evaluation/**"
