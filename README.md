@@ -82,8 +82,8 @@ docker compose up -d
 | `VectorSearch__Database` | — | `Sqlite` (default) \| `Postgres` |
 | `VectorSearch__EmbeddingProvider` | — | `Ollama` (default) \| `AzureOpenAI` |
 | `VectorSearch__Ollama__BaseUrl` | — | Ollama base URL (default: `http://localhost:11434`) |
-| `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `mxbai-embed-large`) — see [Embedding Model Selection](#embedding-model-selection) |
-| `VectorSearch__Ollama__QueryPrefix` | — | Prefix prepended to query strings before embedding (default: mxbai asymmetric prefix). Set to empty string for `nomic-embed-text`. |
+| `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `qllama/bge-large-en-v1.5`) — see [Embedding Model Selection](#embedding-model-selection) |
+| `VectorSearch__Ollama__QueryPrefix` | — | Prefix prepended to query strings before embedding. Empty string for symmetric models (`qllama/bge-large-en-v1.5`, `nomic-embed-text`); set to `"Represent this sentence for searching relevant passages: "` when using `mxbai-embed-large`. |
 | `VectorSearch__AzureOpenAI__Endpoint` | — | Azure OpenAI endpoint (when using AzureOpenAI provider) |
 | `VectorSearch__AzureOpenAI__DeploymentName` | — | Azure OpenAI deployment name |
 | `VectorSearch__AzureOpenAI__ApiKey` | — | Azure OpenAI API key |
@@ -92,19 +92,20 @@ docker compose up -d
 
 ### Embedding Model Selection
 
-The embedding model determines vector quality and dimension. The following models were benchmarked against the v2 golden dataset (30 queries, ASP.NET Core / .NET developer knowledge):
+The embedding model determines vector quality and dimension. 21 configurations (3 models × 7 chunk sizes) were benchmarked against the v2 golden dataset (30 queries, ASP.NET Core / .NET developer knowledge) at the optimal chunk config (ChunkSize=256, ChunkOverlap=64):
 
-| Model | Dimensions | Recall@1 | Recall@3 | MRR | Verdict |
-|-------|-----------|---------|---------|-----|---------|
-| `nomic-embed-text:latest` (v1.5) | 768 | 0.4333 | 0.8000 | 0.6067 | INVESTIGATE |
-| `mxbai-embed-large:latest` | 1024 | **0.4667** | **0.8333** | **0.6428** | **INVESTIGATE** |
+| Model | Dimensions | Recall@1 | Recall@3 | MRR | p50 latency |
+|-------|-----------|---------|---------|-----|-------------|
+| `qllama/bge-large-en-v1.5` | 1024 | **0.6667** | **0.9000** | **0.7856** | 228ms |
+| `mxbai-embed-large` | 1024 | 0.5667 | 0.9333 | 0.7556 | 288ms |
+| `nomic-embed-text` | 768 | 0.4333 | 0.8000 | 0.6067 | 93ms |
 
-**Recommendation**: use `mxbai-embed-large` — it outperforms `nomic-embed-text` on all three metrics and is the new default.
+**Default**: `qllama/bge-large-en-v1.5` — best Recall@1 (+10 pp over mxbai) and MRR. No query prefix required (symmetric model). `nomic-embed-text` is ~3× faster but noticeably lower quality.
 
-Pull the recommended model before starting the server:
+Pull the default model before starting the server:
 
 ```bash
-ollama pull mxbai-embed-large
+ollama pull qllama/bge-large-en-v1.5
 ```
 
 #### Changing the embedding model
@@ -191,7 +192,7 @@ dotnet test
 
 Semantic search lets AI assistants find pages by meaning rather than exact keywords. It is disabled by default and requires:
 
-1. An embedding provider (Ollama with `nomic-embed-text`, or Azure OpenAI)
+1. An embedding provider (Ollama with `qllama/bge-large-en-v1.5`, or Azure OpenAI)
 2. A vector database (SQLite with sqlite-vec, or PostgreSQL with pgvector)
 
 The server syncs page content to the vector database on a configurable schedule (`VectorSearch__Sync__IntervalHours`).

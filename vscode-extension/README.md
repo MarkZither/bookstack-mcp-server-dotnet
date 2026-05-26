@@ -74,7 +74,7 @@ Once configured, your AI assistant has access to the full BookStack API:
 | Tool | Description |
 |------|-------------|
 | **Search** | Full-text search across all BookStack content |
-| **Semantic Search** | Natural language vector search across pages using AI embeddings (requires vector search enabled on the server — see [Docker / Server docs](https://github.com/MarkZither/bookstack-mcp-server-dotnet#vector-search)) |
+| **Semantic Search** | Natural language vector search across pages using AI embeddings (requires vector search enabled on the server — see [Docker / Server docs](https://github.com/MarkZither/bookstack-mcp-server-dotnet#vector-search)). Benchmarked at Recall@1=0.67, Recall@3=0.90, MRR=0.79 using `qllama/bge-large-en-v1.5` with ChunkSize=256/Overlap=64 (21-config tuning run). |
 
 ### Administration
 

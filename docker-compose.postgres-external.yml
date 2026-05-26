@@ -11,7 +11,7 @@
 #
 # On first run, pull the embedding model:
 #   docker compose -f docker-compose.postgres-external.yml exec ollama \
-#     ollama pull mxbai-embed-large
+#     ollama pull qllama/bge-large-en-v1.5
 #
 # MCP endpoint:  http://localhost:3000/mcp  (Bearer token required)
 # Health check:  http://localhost:3000/health
@@ -37,7 +37,7 @@ services:
       ConnectionStrings__VectorDb: ${VECTOR_DB_CONNECTION_STRING}
       VectorSearch__EmbeddingProvider: Ollama
       VectorSearch__Ollama__BaseUrl: http://ollama:11434
-      VectorSearch__Ollama__Model: mxbai-embed-large
+      VectorSearch__Ollama__Model: qllama/bge-large-en-v1.5
       VectorSearch__Sync__IntervalHours: "24"
       VectorSearch__Sync__BatchSize: "50"
 
