@@ -39,9 +39,9 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 - [x] ~~v1~~ Add at least 1 page containing a DrawIO diagram block to `scripts/Seed-BookStack.ps1`
 - [x] ~~v1~~ Create `tests/BookStack.Mcp.Server.Tests/Evaluation/golden-dataset.json` with ≥ 20 pairs
 - [x] Document the DrawIO HTML structure in `docs/features/semantic-search-chunking/drawio-html-notes.md`
-- [ ] **v2** Replace `scripts/Seed-BookStack.ps1` `-GoldenDataset` block with 15 ASP.NET Core / .NET pages (content fetched from Microsoft Learn GitHub, CC BY 4.0) covering the v2 page inventory in `spec.md`
-- [ ] **v2** Replace `src/BookStack.Mcp.Server.Evaluation/golden-dataset.json` with ≥ 30 pairs from the v2 page inventory
-- [ ] **v2** Re-run full evaluation harness against re-seeded dev instance; overwrite `evaluation-report.md`
+- [x] **v2** Replace `scripts/Seed-BookStack.ps1` `-GoldenDataset` block with 15 ASP.NET Core / .NET pages (content fetched from Microsoft Learn GitHub, CC BY 4.0) covering the v2 page inventory in `spec.md`
+- [x] **v2** Replace `src/BookStack.Mcp.Server.Evaluation/golden-dataset.json` with ≥ 30 pairs from the v2 page inventory
+- [x] **v2** Re-run full evaluation harness against re-seeded dev instance; overwrite `evaluation-report.md`
 
 ---
 
@@ -94,7 +94,7 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Depends on**: Phase 4 gate decision
 
 - [x] Write `docs/architecture/decisions/ADR-0020-vector-store-composite-pk-migration.md` covering: rationale for `(page_id, chunk_index)` composite PK, Postgres + SQLite migration approach, SQL Server provider tracking requirement, backward compatibility for existing single-chunk rows (`ChunkIndex = 0, TotalChunks = 1`), and rollback strategy
-- [ ] Get ADR accepted before any Phase 11 migration code is written
+- [x] Get ADR accepted before any Phase 11 migration code is written
 
 ---
 
@@ -105,7 +105,7 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 **Depends on**: Phase 4 gate decision
 
 - [x] Write `docs/architecture/decisions/ADR-0021-rag-chunking-nuget-package.md` covering: new repo `MarkZither/rag-chunking-dotnet`, multi-target `net9.0`/`net10.0`, NuGet package signing (Certum or GitHub Actions sigstore), versioning (SemVer, initial `1.0.0`), CI/CD for publish to NuGet.org, and relationship to `DeepWikiOpenDotnet`
-- [ ] Get ADR accepted before Phase 7 work starts
+- [x] Get ADR accepted before Phase 7 work starts
 
 ---
 
@@ -138,7 +138,7 @@ These are created as blocking tasks in Phase 5/6 (conditional on Phase 1 metrics
 - [x] Create `src/MarkZither.Rag.Chunking/Internal/HtmlStripper.cs` (removes `<script>`, `<style>`, tags; strips DrawIO `<div>`/`<figure>` blocks containing base64 XML; configurable DrawIO regex; no `HtmlAgilityPack` dependency)
 - [x] Create `src/MarkZither.Rag.Chunking/SlideWindowChunkingService.cs` — token-aware sliding window with overlap, sentence/paragraph boundary snapping; mirrors `DeepWiki.Rag.Core.Tokenization.Chunker` (commit `8b5887b`); enforces `MaxChunksPerDocument` and 5 MB input guard
 - [x] Create `src/MarkZither.Rag.Chunking/ServiceCollectionExtensions.cs` (`AddChunking(IServiceCollection)`)
-- [ ] Validate algorithm parity with `DeepWiki.Rag.Core.Tokenization.Chunker` (commit `8b5887b`) — document any intentional deviations
+- [x] Validate algorithm parity with `DeepWiki.Rag.Core.Tokenization.Chunker` (commit `8b5887b`) — document any intentional deviations
 
 ---
 
