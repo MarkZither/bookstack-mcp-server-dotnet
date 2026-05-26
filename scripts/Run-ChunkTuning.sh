@@ -14,10 +14,12 @@
 #
 # Usage:
 #   cd /home/mark/github/bookstack-mcp-server-dotnet
-#   bash scripts/Run-ChunkTuning.sh                          # all 3 models
+#   bash scripts/Run-ChunkTuning.sh                                   # all 3 models, skip existing
 #   bash scripts/Run-ChunkTuning.sh --model nomic-embed-text
 #   bash scripts/Run-ChunkTuning.sh --model mxbai-embed-large
 #   bash scripts/Run-ChunkTuning.sh --model qllama/bge-large-en-v1.5
+#   bash scripts/Run-ChunkTuning.sh --force                           # re-run all, overwrite reports
+#   bash scripts/Run-ChunkTuning.sh --model mxbai-embed-large --force # re-run one model only
 #
 # Each run takes ~10 min (mxbai/bge indexing) or ~5 min (nomic indexing) + ~1 min eval.
 # 3 models × 7 configs = 21 runs. Total estimated time: ~3-4 hours.
@@ -33,9 +35,11 @@ ADMIN_PORT=5175
 
 # Optional model filter: set via --model argument
 MODEL_FILTER=""
+FORCE=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --model) MODEL_FILTER="$2"; shift 2 ;;
+        --force) FORCE=1; shift ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
 done
@@ -76,7 +80,7 @@ stop_server() {
 wait_for_sync() {
     local log_file="$1"
     local server_pid="$2"
-    local timeout_secs=1800  # 30 min max
+    local timeout_secs=3600  # 60 min max
     local elapsed=0
     echo "  Waiting for vector index sync (server PID $server_pid)..."
     while true; do
@@ -92,8 +96,8 @@ wait_for_sync() {
             tail -20 "$log_file" 2>/dev/null || true
             return 1
         fi
-        sleep 10
-        elapsed=$((elapsed + 10))
+        sleep 30
+        elapsed=$((elapsed + 30))
         if [[ $elapsed -ge $timeout_secs ]]; then
             echo "  ERROR: sync timed out after ${timeout_secs}s — killing server"
             kill "$server_pid" 2>/dev/null || true
@@ -144,6 +148,13 @@ run_one() {
     local label="${safe_model}__cs${chunk_size}_co${chunk_overlap}"
     local out_report="$RESULTS_DIR/eval-${label}.md"
 
+    # Skip if this config was already evaluated (unless --force)
+    if [[ -f "$out_report" && "$FORCE" == "0" ]]; then
+        echo ""
+        echo "  ↷ Skipping $model cs=$chunk_size co=$chunk_overlap — report exists (use --force to re-run)"
+        return 0
+    fi
+
     echo ""
     echo "═══════════════════════════════════════════════════════"
     echo "  Model: $model | ChunkSize: $chunk_size | Overlap: $chunk_overlap"
@@ -181,7 +192,6 @@ run_one() {
         --configuration Release 2>&1 | grep -E "passed|failed|succeeded" || true
 
     cp "$REPORT_PATH" "$out_report"
-    echo "  Report saved: $out_report"
 
     local r1 r3 mrr p50 p95 chunks db_mb
     r1=$(extract_metric "$out_report" "Recall@1")
@@ -192,6 +202,19 @@ run_one() {
     # Chunk count from sync log ("Upserted: N"); DB size from stat
     chunks=$(grep -oP 'Upserted: \K[0-9]+' "$log_file" 2>/dev/null | tail -1 || echo "?")
     db_mb=$(python3 -c "import os; s=os.path.getsize('${db_path}'); print(f'{s/1048576:.1f}')" 2>/dev/null || echo "?")
+
+    # Append storage section to the individual report
+    cat >> "$out_report" << STORAGE_EOF
+
+## Storage
+
+| Metric | Value |
+|--------|-------|
+| Chunks indexed | ${chunks} |
+| DB size | ${db_mb} MB |
+STORAGE_EOF
+
+    echo "  Report saved: $out_report"
 
     echo "| $model | $chunk_size | $chunk_overlap | $r1 | $r3 | $mrr | $p50 | $p95 | $chunks | ${db_mb}MB |" >> "$SUMMARY"
     echo "  Recall@1=$r1  Recall@3=$r3  MRR=$mrr  p50=$p50  p95=$p95  chunks=$chunks  db=${db_mb}MB"

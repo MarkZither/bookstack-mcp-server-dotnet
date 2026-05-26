@@ -20,7 +20,7 @@ public sealed class VectorSearchOptions
     /// <summary>
     /// Dimensionality of the embedding vectors produced by the chosen model.
     /// Must match the value compiled into the provider's entity/schema.
-    /// nomic-embed-text: 768 | mxbai-embed-large: 1024 | text-embedding-ada-002: 1536
+    /// nomic-embed-text: 768 | qllama/bge-large-en-v1.5: 1024 | mxbai-embed-large: 1024 | text-embedding-ada-002: 1536
     /// </summary>
     public int EmbeddingDimensions { get; set; } = VectorSearchDefaults.EmbeddingDimensions;
 }
@@ -32,8 +32,8 @@ public sealed class OllamaEmbeddingOptions
 
     /// <summary>
     /// Prefix prepended to query strings before embedding. Improves retrieval quality
-    /// for asymmetric models. mxbai-embed-large requires this prefix; nomic-embed-text does not.
-    /// Set to empty string to disable.
+    /// for asymmetric models such as mxbai-embed-large. Set to empty string for symmetric
+    /// models (nomic-embed-text, qllama/bge-large-en-v1.5).
     /// </summary>
     public string QueryPrefix { get; set; } = VectorSearchDefaults.OllamaQueryPrefix;
 }
@@ -56,8 +56,8 @@ public static class VectorSearchDefaults
     public const string Database = "Sqlite";
     public const string EmbeddingProvider = "Ollama";
     public const string OllamaBaseUrl = "http://localhost:11434";
-    public const string OllamaModel = "mxbai-embed-large";
-    public const string OllamaQueryPrefix = "Represent this sentence for searching relevant passages: ";
+    public const string OllamaModel = "qllama/bge-large-en-v1.5";
+    public const string OllamaQueryPrefix = "";
     public const double SyncIntervalHours = 24.0;
     public const int SyncBatchSize = 50;
     public const int EmbeddingDimensions = 1024;

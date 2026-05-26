@@ -463,6 +463,51 @@ published.
 
 ---
 
+## Tuning Results
+
+21 configurations were evaluated (3 models × 7 chunk configs) against the v2 golden dataset
+(30 queries). Full per-run reports in `runs/eval-*.md`; full matrix in `runs/summary.md`.
+
+### Winning Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Model | `qllama/bge-large-en-v1.5` (1024-dim, symmetric — no query prefix) |
+| ChunkSize | 256 tokens |
+| ChunkOverlap | 64 tokens (25%) |
+| Recall@1 | **0.6667** |
+| Recall@3 | **0.9000** |
+| MRR | **0.7856** |
+| p50 latency | 228 ms |
+
+### Best-per-Model Comparison
+
+| Model | Best Config | Recall@1 | Recall@3 | MRR | p50 |
+|-------|-------------|---------|---------|-----|-----|
+| `qllama/bge-large-en-v1.5` | cs=256 co=64 | **0.6667** | 0.9000 | **0.7856** | 228ms |
+| `mxbai-embed-large` | cs=256 co=64 | 0.5667 | **0.9333** | 0.7556 | 288ms |
+| `nomic-embed-text` | cs=256 co=32 | 0.4333 | 0.8000 | 0.6067 | **93ms** |
+
+### Key Findings
+
+- **ChunkSize=0** (whole-page embeddings) is universally poor — all models score near zero on
+  Recall@1. Diluted page-level vectors cannot match narrow query intent.
+- **ChunkSize=256** beats both cs=512 and cs=1024 for every model. Smaller, focused chunks align
+  better with single-topic queries.
+- **Overlap=64 (25%)** marginally outperforms overlap=32 for bge and mxbai, while higher overlaps
+  (128, 256) give no further gain and increase index size.
+- **bge-large beats mxbai** by +0.11 Recall@1 and +0.03 MRR at the same chunk config, despite
+  being symmetric (no query prefix required), and is faster per query (228ms vs 288ms p50).
+- **nomic-embed-text** is ~3× faster (93ms p50) but Recall@1 tops out at 0.43 — not competitive
+  for production quality. Remains viable for resource-constrained deployments.
+- Chunk count and DB size barely differ between configs on this corpus (~56 chunks regardless of
+  overlap, ~4 MB DB). The quality difference is purely in embedding granularity.
+
+These results are codified as the new defaults in `ChunkOptions` (ChunkSize=256, ChunkOverlap=64)
+and `VectorSearchDefaults` (OllamaModel=`qllama/bge-large-en-v1.5`, OllamaQueryPrefix=`""`).
+
+---
+
 ## Out of Scope
 
 - Semantic / heading-based chunking (`<h2>`/`<h3>` splitting) — deferred pending Phase 1 results.
