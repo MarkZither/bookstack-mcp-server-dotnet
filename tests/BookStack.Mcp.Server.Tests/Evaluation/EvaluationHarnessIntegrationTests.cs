@@ -103,4 +103,28 @@ public sealed class EvaluationReportTests
             }.AsReadOnly()),
         }.AsReadOnly();
     }
+
+    // T-MarkdownReportWriter-1 — GenerateMarkdownReportAsync returns the same content as WriteAsync
+    [Test]
+    public async Task ReportWriter_GenerateMarkdownReportAsync_ReturnsMarkdownString()
+    {
+        var result = EvaluationRunner.BuildResult(MakeSampleResults());
+
+        var markdown = await MarkdownReportWriter.GenerateMarkdownReportAsync(result).ConfigureAwait(false);
+
+        markdown.Should().Contain("# Semantic Search Quality Evaluation Report");
+        markdown.Should().Contain("## Metrics");
+        markdown.Should().NotBeNullOrWhiteSpace();
+    }
+
+    // T-EvaluationRunner-1 — empty query list yields zero latencies without throwing
+    [Test]
+    public async Task EvaluationRunner_EmptyQueryList_ProducesZeroLatencies()
+    {
+        var result = EvaluationRunner.BuildResult(new List<QueryResult>().AsReadOnly());
+
+        result.P50LatencyMs.Should().Be(0);
+        result.P95LatencyMs.Should().Be(0);
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
 }

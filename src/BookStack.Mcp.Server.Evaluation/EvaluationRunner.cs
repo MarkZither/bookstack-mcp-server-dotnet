@@ -26,6 +26,10 @@ public static class EvaluationRunner
 
         var overall = ComputeOverallVerdict(verdicts);
 
+        var latencies = queryResults.Select(r => r.LatencyMs).OrderBy(x => x).ToArray();
+        var p50 = latencies.Length > 0 ? latencies[(int)(latencies.Length * 0.50)] : 0L;
+        var p95 = latencies.Length > 0 ? latencies[(int)(latencies.Length * 0.95)] : 0L;
+
         return new EvaluationResult(
             recallAt1,
             recallAt3,
@@ -33,7 +37,9 @@ public static class EvaluationRunner
             histogram,
             verdicts.AsReadOnly(),
             overall,
-            queryResults);
+            queryResults,
+            p50,
+            p95);
     }
 
     private static MetricVerdict BuildMetricVerdict(

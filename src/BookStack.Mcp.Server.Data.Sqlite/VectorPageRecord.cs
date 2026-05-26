@@ -34,6 +34,6 @@ public sealed class VectorPageRecord
     [VectorStoreData]
     public string ContentHash { get; set; } = string.Empty;
 
-    [VectorStoreVector(Dimensions: 768)]
+    [VectorStoreVector(Dimensions: 1024)]
     public ReadOnlyMemory<float> Embedding { get; set; }
 }

@@ -57,8 +57,12 @@ internal sealed class SemanticSearchToolHandler(
 
         try
         {
+            var queryText = string.IsNullOrEmpty(_options.Value.Ollama.QueryPrefix)
+                ? query
+                : _options.Value.Ollama.QueryPrefix + query;
+
             var embeddings = await _embeddingGenerator
-                .GenerateAsync([query], cancellationToken: ct)
+                .GenerateAsync([queryText], cancellationToken: ct)
                 .ConfigureAwait(false);
 
             var queryVector = embeddings[0].Vector;

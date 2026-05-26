@@ -10,7 +10,8 @@ public sealed record GoldenDatasetEntry(
 public sealed record QueryResult(
     string Query,
     string Expected_Page_Slug,
-    IReadOnlyList<RankedPage> RankedResults);
+    IReadOnlyList<RankedPage> RankedResults,
+    long LatencyMs = 0);
 
 public sealed record RankedPage(
     string PageSlug,
@@ -38,4 +39,6 @@ public sealed record EvaluationResult(
     ScoreHistogram ScoreHistogram,
     IReadOnlyList<MetricVerdict> MetricVerdicts,
     string OverallVerdict,
-    IReadOnlyList<QueryResult> QueryResults);
+    IReadOnlyList<QueryResult> QueryResults,
+    long P50LatencyMs = 0,
+    long P95LatencyMs = 0);

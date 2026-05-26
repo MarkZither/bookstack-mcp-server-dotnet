@@ -2,9 +2,9 @@ namespace MarkZither.Rag.Chunking;
 
 public sealed class ChunkOptions
 {
-    public int ChunkSize { get; init; } = 512;
+    public int ChunkSize { get; init; } = 256;
 
-    public int ChunkOverlap { get; init; } = 128;
+    public int ChunkOverlap { get; init; } = 64;
 
     public int MaxChunksPerDocument { get; init; } = 200;
 

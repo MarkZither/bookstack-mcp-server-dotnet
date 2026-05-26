@@ -82,12 +82,41 @@ docker compose up -d
 | `VectorSearch__Database` | — | `Sqlite` (default) \| `Postgres` |
 | `VectorSearch__EmbeddingProvider` | — | `Ollama` (default) \| `AzureOpenAI` |
 | `VectorSearch__Ollama__BaseUrl` | — | Ollama base URL (default: `http://localhost:11434`) |
-| `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `nomic-embed-text`) |
+| `VectorSearch__Ollama__Model` | — | Ollama embedding model (default: `qllama/bge-large-en-v1.5`) — see [Embedding Model Selection](#embedding-model-selection) |
+| `VectorSearch__Ollama__QueryPrefix` | — | Prefix prepended to query strings before embedding. Empty string for symmetric models (`qllama/bge-large-en-v1.5`, `nomic-embed-text`); set to `"Represent this sentence for searching relevant passages: "` when using `mxbai-embed-large`. |
 | `VectorSearch__AzureOpenAI__Endpoint` | — | Azure OpenAI endpoint (when using AzureOpenAI provider) |
 | `VectorSearch__AzureOpenAI__DeploymentName` | — | Azure OpenAI deployment name |
 | `VectorSearch__AzureOpenAI__ApiKey` | — | Azure OpenAI API key |
 | `VectorSearch__Sync__IntervalHours` | — | How often to sync embeddings (default: `24`) |
 | `VectorSearch__Sync__BatchSize` | — | Pages per sync batch (default: `50`) |
+
+### Embedding Model Selection
+
+The embedding model determines vector quality and dimension. 21 configurations (3 models × 7 chunk sizes) were benchmarked against the v2 golden dataset (30 queries, ASP.NET Core / .NET developer knowledge) at the optimal chunk config (ChunkSize=256, ChunkOverlap=64):
+
+| Model | Dimensions | Recall@1 | Recall@3 | MRR | p50 latency |
+|-------|-----------|---------|---------|-----|-------------|
+| `qllama/bge-large-en-v1.5` | 1024 | **0.6667** | **0.9000** | **0.7856** | 228ms |
+| `mxbai-embed-large` | 1024 | 0.5667 | 0.9333 | 0.7556 | 288ms |
+| `nomic-embed-text` | 768 | 0.4333 | 0.8000 | 0.6067 | 93ms |
+
+**Default**: `qllama/bge-large-en-v1.5` — best Recall@1 (+10 pp over mxbai) and MRR. No query prefix required (symmetric model). `nomic-embed-text` is ~3× faster but noticeably lower quality.
+
+Pull the default model before starting the server:
+
+```bash
+ollama pull qllama/bge-large-en-v1.5
+```
+
+#### Changing the embedding model
+
+Switching to a model with a **different vector dimension** (e.g. 768 → 1024) requires:
+
+1. Update `VectorSearch__Ollama__Model` (or `BOOKSTACK_VECTOR_OLLAMA_MODEL`) to the new model name.
+2. Delete or replace the existing vector database file (`Data Source=bookstack-vectors.db`) — the schema is incompatible.
+3. Restart the server; it will re-index all pages automatically.
+
+> **Note:** The vector dimension is compiled into the schema. Changing between models with the **same** dimension (e.g. two 768-dim models) only requires updating the model name and a full re-index; no schema change is needed.
 
 ### Local Development (self-hosted BookStack + F5 debugging)
 
@@ -163,7 +192,7 @@ dotnet test
 
 Semantic search lets AI assistants find pages by meaning rather than exact keywords. It is disabled by default and requires:
 
-1. An embedding provider (Ollama with `nomic-embed-text`, or Azure OpenAI)
+1. An embedding provider (Ollama with `qllama/bge-large-en-v1.5`, or Azure OpenAI)
 2. A vector database (SQLite with sqlite-vec, or PostgreSQL with pgvector)
 
 The server syncs page content to the vector database on a configurable schedule (`VectorSearch__Sync__IntervalHours`).

@@ -1,122 +1,152 @@
 [
   {
-    "query": "what is bookstack",
-    "expected_page_slug": "introduction-to-bookstack",
-    "notes": "short summary — WYSIWYG"
+    "query": "how do I register a singleton service in ASP.NET Core",
+    "expected_page_slug": "dependency-injection-in-aspnet-core",
+    "notes": "markdown — MS Learn DI fundamentals"
   },
   {
-    "query": "overview of bookstack knowledge management platform",
-    "expected_page_slug": "introduction-to-bookstack",
-    "notes": "short summary — WYSIWYG"
+    "query": "what is constructor injection in ASP.NET Core dependency injection",
+    "expected_page_slug": "dependency-injection-in-aspnet-core",
+    "notes": "markdown — MS Learn DI fundamentals"
   },
   {
-    "query": "how to get started with bookstack",
-    "expected_page_slug": "quick-start-guide",
-    "notes": "short summary — WYSIWYG"
+    "query": "what is the difference between AddScoped and AddTransient service lifetime",
+    "expected_page_slug": "service-lifetimes-in-aspnet-core",
+    "notes": "wysiwyg — service lifetimes"
   },
   {
-    "query": "bookstack docker compose quick start",
-    "expected_page_slug": "quick-start-guide",
-    "notes": "short summary — WYSIWYG"
+    "query": "captive dependency pitfall singleton holding scoped service",
+    "expected_page_slug": "service-lifetimes-in-aspnet-core",
+    "notes": "wysiwyg — service lifetimes"
   },
   {
-    "query": "bookstack features list",
-    "expected_page_slug": "bookstack-feature-overview",
-    "notes": "short summary — WYSIWYG"
+    "query": "how do I write custom middleware in ASP.NET Core",
+    "expected_page_slug": "middleware-pipeline-in-aspnet-core",
+    "notes": "markdown — middleware"
   },
   {
-    "query": "what features does bookstack have",
-    "expected_page_slug": "bookstack-feature-overview",
-    "notes": "short summary — WYSIWYG"
+    "query": "what order should ASP.NET Core middleware be registered",
+    "expected_page_slug": "middleware-pipeline-in-aspnet-core",
+    "notes": "markdown — middleware"
   },
   {
-    "query": "install bookstack ubuntu step by step",
-    "expected_page_slug": "installing-bookstack-on-ubuntu",
-    "notes": "long procedural — Markdown"
+    "query": "configure JWT bearer authentication in ASP.NET Core Web API",
+    "expected_page_slug": "jwt-bearer-authentication-in-aspnet-core",
+    "notes": "markdown — JWT auth"
   },
   {
-    "query": "bookstack ubuntu server installation guide",
-    "expected_page_slug": "installing-bookstack-on-ubuntu",
-    "notes": "long procedural — Markdown"
+    "query": "validate JWT token and claims in ASP.NET Core",
+    "expected_page_slug": "jwt-bearer-authentication-in-aspnet-core",
+    "notes": "markdown — JWT auth"
   },
   {
-    "query": "configure ldap with bookstack",
-    "expected_page_slug": "configuring-ldap-authentication",
-    "notes": "long procedural — Markdown"
+    "query": "policy based authorization with requirements and handlers",
+    "expected_page_slug": "policy-based-authorization-in-aspnet-core",
+    "notes": "markdown — authorization policies"
   },
   {
-    "query": "ldap active directory authentication bookstack env variables",
-    "expected_page_slug": "configuring-ldap-authentication",
-    "notes": "long procedural — Markdown"
+    "query": "how to add an authorization policy with a custom requirement in ASP.NET Core",
+    "expected_page_slug": "policy-based-authorization-in-aspnet-core",
+    "notes": "markdown — authorization policies"
   },
   {
-    "query": "bookstack email smtp configuration",
-    "expected_page_slug": "setting-up-email-notifications",
-    "notes": "long procedural — Markdown"
+    "query": "how to bind appsettings section to a typed configuration class",
+    "expected_page_slug": "options-pattern-in-aspnet-core",
+    "notes": "markdown — options pattern"
   },
   {
-    "query": "how to set up email notifications in bookstack",
-    "expected_page_slug": "setting-up-email-notifications",
-    "notes": "long procedural — Markdown"
+    "query": "difference between IOptions IOptionsSnapshot and IOptionsMonitor",
+    "expected_page_slug": "options-pattern-in-aspnet-core",
+    "notes": "markdown — options pattern"
   },
   {
-    "query": "recommended php ini settings for bookstack",
-    "expected_page_slug": "php-configuration-for-bookstack",
-    "notes": "code-heavy — Markdown"
+    "query": "store development secrets outside of appsettings.json in .NET",
+    "expected_page_slug": "app-secrets-and-key-vault-in-aspnet-core",
+    "notes": "markdown — secrets management"
   },
   {
-    "query": "php fpm pool configuration bookstack",
-    "expected_page_slug": "php-configuration-for-bookstack",
-    "notes": "code-heavy — Markdown"
+    "query": "dotnet user-secrets init and add secret to project",
+    "expected_page_slug": "app-secrets-and-key-vault-in-aspnet-core",
+    "notes": "markdown — secrets management"
   },
   {
-    "query": "nginx proxy pass bookstack configuration",
-    "expected_page_slug": "nginx-reverse-proxy-configuration",
-    "notes": "code-heavy — Markdown"
+    "query": "ConfigureAwait false to avoid deadlock in async await C#",
+    "expected_page_slug": "async-await-patterns-in-dotnet",
+    "notes": "markdown — async/await"
   },
   {
-    "query": "nginx virtual host server block for bookstack",
-    "expected_page_slug": "nginx-reverse-proxy-configuration",
-    "notes": "code-heavy — Markdown"
+    "query": "difference between async void and async Task in C#",
+    "expected_page_slug": "async-await-patterns-in-dotnet",
+    "notes": "markdown — async/await"
   },
   {
-    "query": "create mysql database for bookstack",
-    "expected_page_slug": "mysql-database-setup",
-    "notes": "code-heavy — Markdown"
+    "query": "how to pass CancellationToken through async method calls",
+    "expected_page_slug": "cancellationtoken-in-dotnet",
+    "notes": "markdown — cancellation"
   },
   {
-    "query": "bookstack database user permissions mysql grant",
-    "expected_page_slug": "mysql-database-setup",
-    "notes": "code-heavy — Markdown"
+    "query": "cooperative cancellation using CancellationTokenSource and ThrowIfCancellationRequested",
+    "expected_page_slug": "cancellationtoken-in-dotnet",
+    "notes": "markdown — cancellation"
   },
   {
-    "query": "bookstack system architecture components diagram",
-    "expected_page_slug": "system-architecture-overview",
-    "notes": "multi-topic with DrawIO — WYSIWYG"
+    "query": "LINQ deferred execution Select Where OrderBy in C#",
+    "expected_page_slug": "linq-fundamentals",
+    "notes": "markdown — LINQ"
   },
   {
-    "query": "bookstack mcp server integration architecture",
-    "expected_page_slug": "system-architecture-overview",
-    "notes": "multi-topic with DrawIO — WYSIWYG"
+    "query": "difference between LINQ query syntax and method syntax",
+    "expected_page_slug": "linq-fundamentals",
+    "notes": "markdown — LINQ"
   },
   {
-    "query": "bookstack api token authentication header",
-    "expected_page_slug": "api-authentication-methods",
-    "notes": "multi-topic — WYSIWYG"
+    "query": "when should I use IQueryable instead of IEnumerable for database queries",
+    "expected_page_slug": "ienumerable-vs-iqueryable",
+    "notes": "wysiwyg — IEnumerable vs IQueryable"
   },
   {
-    "query": "how to authenticate requests to bookstack rest api",
-    "expected_page_slug": "api-authentication-methods",
-    "notes": "multi-topic — WYSIWYG"
+    "query": "IQueryable pushes filter to SQL while IEnumerable filters in memory",
+    "expected_page_slug": "ienumerable-vs-iqueryable",
+    "notes": "wysiwyg — IEnumerable vs IQueryable"
   },
   {
-    "query": "bookstack user roles permissions rbac",
-    "expected_page_slug": "user-roles-and-permissions",
-    "notes": "multi-topic — WYSIWYG"
+    "query": "how to add and apply an EF Core migration",
+    "expected_page_slug": "ef-core-migrations",
+    "notes": "markdown — EF Core migrations"
   },
   {
-    "query": "per entity permissions override bookstack",
-    "expected_page_slug": "user-roles-and-permissions",
-    "notes": "multi-topic — WYSIWYG"
+    "query": "generate a SQL migration script for production deployment EF Core",
+    "expected_page_slug": "ef-core-migrations",
+    "notes": "markdown — EF Core migrations"
+  },
+  {
+    "query": "disable change tracking with AsNoTracking in EF Core",
+    "expected_page_slug": "ef-core-querying-and-tracking",
+    "notes": "markdown — EF Core querying"
+  },
+  {
+    "query": "eager loading Include navigation property EF Core",
+    "expected_page_slug": "ef-core-querying-and-tracking",
+    "notes": "markdown — EF Core querying"
+  },
+  {
+    "query": "configure retry on failure for transient SQL errors in EF Core",
+    "expected_page_slug": "ef-core-connection-resiliency",
+    "notes": "wysiwyg — connection resiliency"
+  },
+  {
+    "query": "EF Core execution strategy for connection resiliency and retries",
+    "expected_page_slug": "ef-core-connection-resiliency",
+    "notes": "wysiwyg — connection resiliency"
+  },
+  {
+    "query": "ASP.NET Core HTTP request pipeline middleware execution order",
+    "expected_page_slug": "aspnet-core-request-pipeline",
+    "notes": "wysiwyg DrawIO — request pipeline"
+  },
+  {
+    "query": "UseAuthentication must come before UseAuthorization in ASP.NET Core pipeline",
+    "expected_page_slug": "aspnet-core-request-pipeline",
+    "notes": "wysiwyg DrawIO — request pipeline"
   }
 ]

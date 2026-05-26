@@ -1,7 +1,7 @@
 # Feature Spec: Semantic Search Quality — Golden-Dataset Evaluation and Chunking Strategy
 
 **ID**: FEAT-0060
-**Status**: Review
+**Status**: Review (golden dataset replaced — see § Golden Dataset Rationale below)
 **Author**: Mark
 **Created**: 2026-05-12
 **Last Updated**: 2026-05-19
@@ -72,19 +72,87 @@ This feature therefore has two phases gated by a quality checkpoint:
 
 ---
 
+## Golden Dataset Rationale
+
+The initial golden dataset (v1) seeded BookStack documentation pages (installation, LDAP auth,
+nginx configuration, etc.). Post-evaluation analysis revealed a structural flaw: every page in
+that dataset contains the entity "BookStack" throughout its content, giving all pages near-identical
+semantic fingerprints. The embedding model cannot discriminate between them, producing
+`Recall@1 = 0.0833` and `MRR = 0.2514` — an artificially hard baseline that does not represent
+a typical developer wiki.
+
+The golden dataset has been replaced (v2) with **ASP.NET Core and .NET fundamentals** content
+sourced from [Microsoft Learn](https://learn.microsoft.com/en-us/) (CC BY 4.0). This domain:
+
+- Has clearly bounded, distinct topics (dependency injection ≠ JWT auth ≠ EF Core migrations)
+- Represents the realistic use case for this tool (a developer team's knowledge wiki)
+- Matches the training distribution of modern embedding models, making the thresholds meaningful
+- Still exercises all required page types: WYSIWYG overview pages, Markdown how-to pages, and
+  at least one DrawIO architecture diagram (ASP.NET Core request pipeline)
+
+The v1 seed script and `golden-dataset.json` are preserved in git history on branch
+`feat-116-dotnet11-preview4` (commit `5dd50a1`). The v2 dataset is defined below.
+
+### v2 Golden Dataset — Page Inventory
+
+| # | Slug | Topic | Editor | Notes |
+|---|------|-------|--------|-------|
+| 1 | `aspnetcore-dependency-injection` | DI fundamentals | markdown | conceptual |
+| 2 | `aspnetcore-service-lifetimes` | Scoped / Singleton / Transient | markdown | reference |
+| 3 | `aspnetcore-middleware-pipeline` | Middleware order & writing custom middleware | markdown | conceptual + DrawIO |
+| 4 | `aspnetcore-jwt-authentication` | JWT bearer auth setup | markdown | procedural |
+| 5 | `aspnetcore-authorization-policies` | Policy-based authorization | markdown | reference |
+| 6 | `aspnetcore-options-pattern` | `IOptions<T>` and configuration binding | markdown | how-to |
+| 7 | `aspnetcore-secrets-management` | User Secrets + Azure Key Vault | markdown | how-to |
+| 8 | `dotnet-async-await` | `async`/`await` patterns and `ConfigureAwait` | wysiwyg | conceptual |
+| 9 | `dotnet-cancellation-tokens` | `CancellationToken` usage and propagation | wysiwyg | reference |
+| 10 | `dotnet-linq-overview` | LINQ operators and deferred execution | wysiwyg | conceptual |
+| 11 | `dotnet-ienumerable-vs-iqueryable` | `IEnumerable<T>` vs `IQueryable<T>` | wysiwyg | FAQ-style |
+| 12 | `efcore-migrations` | EF Core migration workflow | markdown | procedural |
+| 13 | `efcore-querying` | LINQ queries, tracking vs no-tracking | markdown | reference |
+| 14 | `efcore-connection-resiliency` | Retry policies and transient failures | markdown | how-to |
+| 15 | `aspnetcore-request-pipeline-diagram` | Full HTTP request lifecycle (DrawIO) | wysiwyg | DrawIO diagram |
+
+### v2 Golden Dataset — Query Coverage
+
+At least 2 queries per page (30 pairs total), covering both keyword-rich and natural-language
+phrasings. Examples:
+
+| Query | Expected slug |
+|-------|---------------|
+| how to register a singleton in ASP.NET Core | `aspnetcore-dependency-injection` |
+| what is the difference between AddScoped and AddTransient | `aspnetcore-service-lifetimes` |
+| how do I add custom middleware to the pipeline | `aspnetcore-middleware-pipeline` |
+| configure JWT bearer authentication in ASP.NET Core | `aspnetcore-jwt-authentication` |
+| policy-based authorization claims ASP.NET Core | `aspnetcore-authorization-policies` |
+| how to read appsettings into a typed class | `aspnetcore-options-pattern` |
+| store secrets outside appsettings.json | `aspnetcore-secrets-management` |
+| avoid deadlocks with ConfigureAwait false | `dotnet-async-await` |
+| pass cancellation token through async call chain | `dotnet-cancellation-tokens` |
+| LINQ Select Where OrderBy deferred execution | `dotnet-linq-overview` |
+| IEnumerable vs IQueryable when to use each | `dotnet-ienumerable-vs-iqueryable` |
+| add migration and update database EF Core | `efcore-migrations` |
+| disable change tracking EF Core query | `efcore-querying` |
+| configure retry policy for transient SQL errors | `efcore-connection-resiliency` |
+| ASP.NET Core HTTP request pipeline lifecycle order | `aspnetcore-request-pipeline-diagram` |
+
+---
+
 ## Requirements
 
 ### Phase 1 — Golden-Dataset Evaluation
 
 #### Functional Requirements
 
-1. The system MUST provide a golden dataset of at least 20 (query, expected_page_slug) pairs covering
-   diverse BookStack page types: short summary pages, long procedural pages, code-heavy pages, and
-   multi-topic overview pages. The dataset MUST include:
+1. The system MUST provide a golden dataset of at least 30 (query, expected_page_slug) pairs
+   covering ASP.NET Core and .NET fundamentals developer knowledge pages (see
+   § Golden Dataset Rationale above for the rationale and full v2 page inventory). The dataset
+   MUST include:
    - At least 3 pages authored in the **WYSIWYG editor** (`Editor = "wysiwyg"`)
-   - At least 3 pages authored in the **Markdown editor** (`Editor = "markdown"`)
-   - At least 1 page containing a **DrawIO diagram**, so that the raw `Html` API response can be
-     inspected and the diagram-stripping pattern confirmed before Phase 2 ships.
+   - At least 6 pages authored in the **Markdown editor** (`Editor = "markdown"`)
+   - At least 1 page containing a **DrawIO diagram** (`aspnetcore-request-pipeline-diagram`),
+     so that the raw `Html` API response can be inspected and the diagram-stripping pattern
+     confirmed before Phase 2 ships.
 2. The evaluation harness MUST seed the BookStack dev instance using the existing
    `scripts/Seed-BookStack.ps1` script extended with the evaluation content.
 3. The evaluation harness MUST trigger a full vector sync and wait for completion before running
@@ -392,6 +460,51 @@ published.
   **Decision**: Option A — deduplicate inside the store, return one result per page. The winning
   chunk's `Excerpt` (≤300 chars of the matched section) gives the LLM enough context to know *why*
   the page ranked. Non-breaking additive change to `VectorSearchResult`. _Resolved 2026-05-12._
+
+---
+
+## Tuning Results
+
+21 configurations were evaluated (3 models × 7 chunk configs) against the v2 golden dataset
+(30 queries). Full per-run reports in `runs/eval-*.md`; full matrix in `runs/summary.md`.
+
+### Winning Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Model | `qllama/bge-large-en-v1.5` (1024-dim, symmetric — no query prefix) |
+| ChunkSize | 256 tokens |
+| ChunkOverlap | 64 tokens (25%) |
+| Recall@1 | **0.6667** |
+| Recall@3 | **0.9000** |
+| MRR | **0.7856** |
+| p50 latency | 228 ms |
+
+### Best-per-Model Comparison
+
+| Model | Best Config | Recall@1 | Recall@3 | MRR | p50 |
+|-------|-------------|---------|---------|-----|-----|
+| `qllama/bge-large-en-v1.5` | cs=256 co=64 | **0.6667** | 0.9000 | **0.7856** | 228ms |
+| `mxbai-embed-large` | cs=256 co=64 | 0.5667 | **0.9333** | 0.7556 | 288ms |
+| `nomic-embed-text` | cs=256 co=32 | 0.4333 | 0.8000 | 0.6067 | **93ms** |
+
+### Key Findings
+
+- **ChunkSize=0** (whole-page embeddings) is universally poor — all models score near zero on
+  Recall@1. Diluted page-level vectors cannot match narrow query intent.
+- **ChunkSize=256** beats both cs=512 and cs=1024 for every model. Smaller, focused chunks align
+  better with single-topic queries.
+- **Overlap=64 (25%)** marginally outperforms overlap=32 for bge and mxbai, while higher overlaps
+  (128, 256) give no further gain and increase index size.
+- **bge-large beats mxbai** by +0.11 Recall@1 and +0.03 MRR at the same chunk config, despite
+  being symmetric (no query prefix required), and is faster per query (228ms vs 288ms p50).
+- **nomic-embed-text** is ~3× faster (93ms p50) but Recall@1 tops out at 0.43 — not competitive
+  for production quality. Remains viable for resource-constrained deployments.
+- Chunk count and DB size barely differ between configs on this corpus (~56 chunks regardless of
+  overlap, ~4 MB DB). The quality difference is purely in embedding granularity.
+
+These results are codified as the new defaults in `ChunkOptions` (ChunkSize=256, ChunkOverlap=64)
+and `VectorSearchDefaults` (OllamaModel=`qllama/bge-large-en-v1.5`, OllamaQueryPrefix=`""`).
 
 ---
 

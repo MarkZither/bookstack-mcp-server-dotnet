@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>MarkZither.Rag.Chunking</PackageId>
-    <Version>0.0.1-alpha.1</Version>
+    <Version>0.0.1-alpha.2</Version>
     <Authors>Mark Zither</Authors>
     <Description>Token-aware sliding-window chunking primitives for retrieval-augmented generation (RAG) pipelines. Provides IChunkingService, SlideWindowChunkingService, TiktokenEncoder (cl100k_base), and HTML stripping — with no HtmlAgilityPack dependency.</Description>
     <PackageTags>rag;chunking;nlp;embeddings;ai;llm;tokenizer;tiktoken;dotnet</PackageTags>

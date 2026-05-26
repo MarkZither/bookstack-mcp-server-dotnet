@@ -151,4 +151,26 @@ public sealed class SemanticSearchToolHandlerTests
 
         result.Should().Be("[]");
     }
+
+    // T31 — non-empty QueryPrefix is prepended to the query before embedding
+    [Test]
+    public async Task SemanticSearchAsync_WithQueryPrefix_PrependsPrefixToEmbeddingInput()
+    {
+        string? capturedInput = null;
+        _mockEmbGen
+            .Setup(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<string>, EmbeddingGenerationOptions?, CancellationToken>((inputs, _, _) => capturedInput = inputs.First())
+            .ReturnsAsync(MakeEmbeddings([1f, 0f]));
+        _mockStore
+            .Setup(s => s.SearchAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<int>(), It.IsAny<float>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<VectorSearchResult>());
+
+        var opts = new VectorSearchOptions { Enabled = true };
+        opts.Ollama.QueryPrefix = "Represent this sentence: ";
+        var handler = CreateHandler(opts);
+
+        await handler.SemanticSearchAsync("test query").ConfigureAwait(false);
+
+        capturedInput.Should().Be("Represent this sentence: test query");
+    }
 }

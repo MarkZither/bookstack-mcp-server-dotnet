@@ -5,6 +5,13 @@ namespace BookStack.Mcp.Server.Evaluation;
 // Refs: FEAT-0060 Phase 4 — Req 1
 public static class MarkdownReportWriter
 {
+    public static async Task<string> GenerateMarkdownReportAsync(EvaluationResult result)
+    {
+        using var ms = new MemoryStream();
+        await WriteAsync(result, ms).ConfigureAwait(false);
+        return Encoding.UTF8.GetString(ms.ToArray());
+    }
+
     public static async Task WriteAsync(EvaluationResult result, Stream output)
     {
         using var writer = new StreamWriter(output, Encoding.UTF8, leaveOpen: true);
@@ -61,6 +68,15 @@ public static class MarkdownReportWriter
         await writer.WriteLineAsync().ConfigureAwait(false);
         await writer.WriteLineAsync($"- **Queries evaluated**: {result.QueryResults.Count}").ConfigureAwait(false);
         await writer.WriteLineAsync($"- **Verdict**: {result.OverallVerdict}").ConfigureAwait(false);
+        await writer.WriteLineAsync().ConfigureAwait(false);
+
+        // Latency
+        await writer.WriteLineAsync("## Query Latency (end-to-end, including embedding)").ConfigureAwait(false);
+        await writer.WriteLineAsync().ConfigureAwait(false);
+        await writer.WriteLineAsync("| Percentile | Latency |").ConfigureAwait(false);
+        await writer.WriteLineAsync("|------------|---------|").ConfigureAwait(false);
+        await writer.WriteLineAsync($"| p50 | {result.P50LatencyMs} ms |").ConfigureAwait(false);
+        await writer.WriteLineAsync($"| p95 | {result.P95LatencyMs} ms |").ConfigureAwait(false);
 
         await writer.FlushAsync().ConfigureAwait(false);
     }
