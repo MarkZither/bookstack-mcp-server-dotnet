@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-26
+
+### Added
+
+- **Semantic search tuning** — default embedding model changed to `qllama/bge-large-en-v1.5`
+  (ChunkSize=256, ChunkOverlap=64) after 21-run evaluation across three models and six chunk
+  configurations. Recall@1 improved from 0.0000 to **0.6667**, Recall@3 from 0.0333 to
+  **0.9000**, MRR from 0.1678 to **0.7856** vs. the no-chunking baseline.
+  The new `bookstack.vectorSearch.ollamaModel` default reflects the winning configuration.
+- **Chunking integration** — the sync service now splits pages into overlapping chunks before
+  embedding, using a composite `(page_id, chunk_index)` primary key in the vector store.
+  Pages that are too long to embed in one pass are no longer silently truncated.
+  Sync prefers `page.Markdown` over HTML for Markdown-editor pages, reducing noise from
+  HTML markup in embeddings.
+
+### Changed
+
+- `bookstack.vectorSearch.ollamaModel` default updated from `nomic-embed-text` to
+  `qllama/bge-large-en-v1.5`.
+
 ## [0.4.1] - 2026-05-11
 
 ### Added
