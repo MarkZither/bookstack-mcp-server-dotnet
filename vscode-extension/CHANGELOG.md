@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-05-28
+
+### Fixed
+
+- **README badge** — replaced retired `visual-studio-marketplace` shields.io category with
+  the current `vscode-marketplace` category so the version badge renders correctly.
+
+### Changed
+
+- **Tiktoken** updated from 2.0.3 to 3.1.5.
+- **FluentAssertions** (test dependency) updated from 7.2.2 to 8.10.0.
+
 ## [0.5.0] - 2026-05-26
 
 ### Added
