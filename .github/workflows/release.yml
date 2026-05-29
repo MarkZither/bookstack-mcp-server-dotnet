@@ -25,7 +25,6 @@ jobs:
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
         with:
           global-json-file: global.json
-          include-prerelease: true
 
       - name: Publish ${{ matrix.rid }}
         run: |
@@ -105,7 +104,6 @@ jobs:
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
         with:
           global-json-file: global.json
-          include-prerelease: true
 
       - name: Publish server (framework-dependent)
         run: |
