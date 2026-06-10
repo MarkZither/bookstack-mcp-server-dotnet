@@ -21,6 +21,7 @@ jobs:
         with:
           global-json-file: global.json
           include-prerelease: true
+          runtime: ''
 
       - name: Restore
         run: dotnet restore

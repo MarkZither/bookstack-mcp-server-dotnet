@@ -24,6 +24,7 @@ jobs:
         with:
           global-json-file: global.json
           include-prerelease: true
+          runtime: ''
 
       - name: Install tools
         run: |
