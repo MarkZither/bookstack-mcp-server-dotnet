@@ -24,7 +24,7 @@ jobs:
         with:
           global-json-file: global.json
           include-prerelease: true
-          runtime: ''
+          dotnet-version: 11.0.100-preview.4.26230.115
 
       - name: Install tools
         run: |
