@@ -56,6 +56,14 @@ docs/
 - Record architecture decisions using `docs/architecture/decisions/ADR-TEMPLATE.md`.
 - Follow the style guide in `.github/instructions/documentation-style.instructions.md`.
 
+## Git and Commits
+
+⚠️ **CRITICAL: NEVER use `git commit --no-verify` or `git push --force-with-lease` or similar bypass flags.**
+- Pre-commit hooks (Husky + dotnet format) exist for a reason: they enforce code quality
+- If a hook fails: **fix the underlying issue** (run `dotnet format`, resolve errors) and retry
+- If you bypass hooks, the PR will fail CI/CD checks anyway, and you will have violated the project's quality guardrails
+- Always let hooks run. They protect the codebase.
+
 ## Agent Mode Instructions
 
 - Use `@workspace` references when citing files.
